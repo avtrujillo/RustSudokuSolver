@@ -1,0 +1,7 @@
+[package]
+name = "SudokuSolver"
+version = "0.1.0"
+authors = ["avtrujillo <alexandervtrujillo@gmail.com>"]
+edition = "2018"
+
+[dependencies]

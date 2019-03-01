@@ -12,12 +12,12 @@ fn main() {
 }
 
 struct SudokuBoard {
-    tiles: [SudokuDigit; 89],
+    tiles: [SudokuDigit; 81],
 }
 
 impl SudokuBoard {
 
-    fn new(sd_array: [SudokuDigit; 89]) ->  SudokuBoard {
+    fn new(sd_array: [SudokuDigit; 81]) ->  SudokuBoard {
         SudokuBoard {tiles: sd_array}
     }
 }
@@ -45,7 +45,7 @@ enum SudokuDigit {
 
 impl SudokuDigit {
 
-    fn get_puzzle_input() -> [SudokuDigit; 89] {
+    fn get_puzzle_input() -> [SudokuDigit; 81] {
 
         let mut input_string = String::new();
         let mut sudoku_file = File::open("src/sudoku_input.txt").expect("Unable to read file");
@@ -54,15 +54,15 @@ impl SudokuDigit {
 
     }
 
-    fn from_chars(chars: Chars) -> [SudokuDigit; 89] {
+    fn from_chars(chars: Chars) -> [SudokuDigit; 81] {
         let mut fm = chars.filter_map(|c| SudokuDigit::digit_match(c));
 
-        let mut digit_array = [SudokuDigit::Unknown; 89];
+        let mut digit_array = [SudokuDigit::Unknown; 81];
 
-        for i in 0..88 {
+        for i in 0..80 {
             let next_digit = match fm.next() {
                 Some(digit) => digit,
-                None => panic!("Incorrect number of digits read from file: {}")
+                None => panic!("Incorrect number of digits read from file: {}", i)
             };
             digit_array[i] = next_digit;
         }

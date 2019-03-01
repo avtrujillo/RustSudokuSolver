@@ -2,22 +2,19 @@ use std::fs::*;
 use std::iter::*;
 use std::str::Chars;
 use std::io::Read;
-//use std::fmt;
-
-
-
-#[derive(Clone, Copy, Debug)]
-enum SudokuDigit {
-    Known(u32),
-    Guess(u32),
-    Unknown
-}
+use std::fmt;
 
 fn main() {
 
     let sd_array = SudokuDigit::get_puzzle_input();
-    //println!("{:?}", sd_array);
-    println!("Hello, world!");
+    println!("{:?}", sd_array);
+}
+
+#[derive(Clone, Copy)]
+enum SudokuDigit {
+    Known(u32),
+    Guess(u32),
+    Unknown
 }
 
 
@@ -58,4 +55,21 @@ impl SudokuDigit {
         }
     }
 
+}
+
+impl fmt::Debug for SudokuDigit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let debug_output = match self {
+            SudokuDigit::Unknown => String::from("???"),
+            SudokuDigit::Known(known_digit) => {
+                let match_output = format!("-{}-", known_digit);
+                match_output
+            },
+            SudokuDigit::Guess(guess_digit) => {
+                let match_output = format!("<{}>", guess_digit);
+                match_output
+            }
+        };
+        write!(f, "{}", debug_output.as_str())
+    }
 }

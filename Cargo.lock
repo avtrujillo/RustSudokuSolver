@@ -1,0 +1,4 @@
+[[package]]
+name = "SudokuSolver"
+version = "0.1.0"
+

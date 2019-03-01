@@ -2,10 +2,7 @@
 pub mod sudoku_digit;
 pub use sudoku_digit::SudokuDigit as SudokuDigit;
 
-use std::fs::*;
 use std::iter::*;
-use std::str::Chars;
-use std::io::Read;
 use std::fmt;
 
 pub struct SudokuBoard {

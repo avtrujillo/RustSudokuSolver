@@ -7,7 +7,32 @@ use std::fmt;
 fn main() {
 
     let sd_array = SudokuDigit::get_puzzle_input();
-    println!("{:?}", sd_array);
+    let sd_board = SudokuBoard::new(sd_array);
+    println!("{:?}", sd_board);
+}
+
+struct SudokuBoard {
+    tiles: [SudokuDigit; 89],
+}
+
+impl SudokuBoard {
+
+    fn new(sd_array: [SudokuDigit; 89]) ->  SudokuBoard {
+        SudokuBoard {tiles: sd_array}
+    }
+}
+
+impl fmt::Debug for SudokuBoard {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut debug_string = String::new();
+        for (i, digit) in self.tiles.into_iter().enumerate() {
+            debug_string.push_str(digit.debug_output().as_str());
+            if (i + 1) % 9 == 0 {
+                debug_string.push_str("\n");
+            }
+        };
+        write!(f, "{}", debug_string.as_str())
+    }
 }
 
 #[derive(Clone, Copy)]
@@ -55,11 +80,8 @@ impl SudokuDigit {
         }
     }
 
-}
-
-impl fmt::Debug for SudokuDigit {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let debug_output = match self {
+    fn debug_output(&self) -> String {
+        match self {
             SudokuDigit::Unknown => String::from("???"),
             SudokuDigit::Known(known_digit) => {
                 let match_output = format!("-{}-", known_digit);
@@ -69,7 +91,13 @@ impl fmt::Debug for SudokuDigit {
                 let match_output = format!("<{}>", guess_digit);
                 match_output
             }
-        };
-        write!(f, "{}", debug_output.as_str())
+        }
+    }
+
+}
+
+impl fmt::Debug for SudokuDigit {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+       write!(f, "{}", self.debug_output().as_str())
     }
 }

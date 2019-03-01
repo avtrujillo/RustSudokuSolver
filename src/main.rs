@@ -2,25 +2,32 @@ use std::fs::*;
 use std::iter::*;
 use std::str::Chars;
 use std::io::Read;
+//use std::fmt;
 
-fn main() {
 
-    println!("Hello, world!");
-}
 
 #[derive(Clone, Copy, Debug)]
 enum SudokuDigit {
     Known(u32),
+    Guess(u32),
     Unknown
 }
+
+fn main() {
+
+    let sd_array = SudokuDigit::get_puzzle_input();
+    //println!("{:?}", sd_array);
+    println!("Hello, world!");
+}
+
 
 impl SudokuDigit {
 
     fn get_puzzle_input() -> [SudokuDigit; 89] {
 
         let mut input_string = String::new();
-        let mut sudoku_file = File::open("sudoku_input.txt").expect("Unable to read file");
-        sudoku_file.read_to_string(&mut input_string);
+        let mut sudoku_file = File::open("src/sudoku_input.txt").expect("Unable to read file");
+        sudoku_file.read_to_string(&mut input_string).unwrap();
         SudokuDigit::from_chars(input_string.as_str().chars())
 
     }
@@ -33,7 +40,7 @@ impl SudokuDigit {
         for i in 0..88 {
             let next_digit = match fm.next() {
                 Some(digit) => digit,
-                None => panic!("Incorrect number of digits read from file")
+                None => panic!("Incorrect number of digits read from file: {}")
             };
             digit_array[i] = next_digit;
         }

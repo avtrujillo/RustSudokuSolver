@@ -6,7 +6,7 @@ fn main() {
 
     let sd_array = SudokuDigit::get_puzzle_input();
     let sd_board = SudokuBoard::new(sd_array);
-    println!("{:?}", sd_board);
+    println!("{}", sd_board);
 }
 
 

@@ -64,11 +64,37 @@
             }
         }
 
+        pub fn display_char(&self) -> char {
+            match self {
+                SudokuDigit::Unknown => '_',
+                SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => {
+                    std::char::from_digit(*digit, 10)
+                        .expect("failed to convert digit into char")
+                }
+            }
+        }
+/*
+        pub fn display_output(&self) -> String {
+            match self {
+                SudokuDigit::Unknown => String::from("_"),
+                SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => {
+                    let match_output = format!("{}", digit);
+                    match_output
+                },
+            }
+        }
+*/
     }
 
     impl fmt::Debug for SudokuDigit {
         fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
             write!(f, "{}", self.debug_output().as_str())
+        }
+    }
+
+    impl fmt::Display for SudokuDigit {
+        fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+            write!(f, "{}", self.display_char())
         }
     }
 

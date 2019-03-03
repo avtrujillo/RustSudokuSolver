@@ -4,7 +4,6 @@ pub use sudoku_digit::SudokuDigit as SudokuDigit;
 
 use std::iter::*;
 use std::fmt;
-//use crate::sudoku_board::sudoku_digit::SudokuDigit;
 
 
 pub struct SudokuBoard {
@@ -34,14 +33,6 @@ impl SudokuBoard {
         };
         display_string
     }
-/*
-    fn display_digit(&sd_digit: SudokuDigit) -> char {
-        match *sd_digit {
-            SudokuDigit::Unknown => '_',
-            SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => char::from(*digit as u8)
-        }
-    }
-*/
 }
 
 impl fmt::Display for SudokuBoard {
@@ -69,30 +60,3 @@ impl fmt::Debug for SudokuBoard {
         write!(f, "{}", debug_string.as_str())
     }
 }
-
-
-
-enum SudokuDisplay<'a> {
-    EndOfColumn(&'a char),
-    EndOfSmallRow(&'a char),
-    EndOfBigRow(&'a char),
-    OrdinaryDigit(&'a char)
-}
-/*
-impl SudokuDisplay {
-
-    fn new(i: &u32, sd_digit: &SudokuDigit) -> SudokuDisplay {
-        let sd_output: SudokuDisplay;
-        if i % 27 == 0 {
-            sd_output = SudokuDisplay::EndOfBigRow
-        }
-        else {
-            sd_output = Digit
-        }
-        sd_output
-    }
-
-
-
-
-}*/

@@ -1,5 +1,3 @@
-#[path = "../sudoku_digit/mod.rs"]
-pub mod sudoku_digit;
 pub use sudoku_digit::SudokuDigit as SudokuDigit;
 
 use std::iter::*;

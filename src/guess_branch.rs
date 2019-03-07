@@ -1,11 +1,12 @@
-#[path = "../sudoku_board/mod.rs"]
-pub mod sudoku_board;
-#[path = "../sd_macros/mod.rs"]
-pub mod sd_macros;
-
 use sudoku_board::SudokuBoard as SudokuBoard;
 use sudoku_board::SudokuDigit as SudokuDigit;
-use sd_macros::*;
+use std::fmt;
+
+use sd_macros::array_from_take;
+use sd_macros::array_from_block_over_range;
+use sd_macros::n_element_filter;
+
+use std::fmt::Display as Display;
 
 use arrayvec::ArrayVec;
 
@@ -22,7 +23,7 @@ impl GuessBranch {
 
 
     fn new(&mut self, guess_index: u32, guess_digit: u32, board: SudokuBoard) -> GuessBranch {
-        let mut new_branch = GuessBranch { board: board.clone(), children: vec![] }
+        let mut new_branch = GuessBranch { board: board.clone(), children: vec![] };
         new_branch.make_guess(guess_index, guess_digit);
         new_branch
     }
@@ -82,8 +83,6 @@ impl DigitCoors {
         array_from_block_over_range![0..=8 { |n| DigitCoors::topleft_coors_arr()[n] } ]
     }
 
-    pub fn topleft_coors_arr() -> [DigitCoors; 9] {TOPLEFT_COORS_ARR}
-
     const TOPLEFT_COORS_ARR: [DigitCoors; 9] = [
         DigitCoors{x_coor: 0, y_coor: 0},
         DigitCoors{x_coor: 3, y_coor: 0},
@@ -96,16 +95,20 @@ impl DigitCoors {
         DigitCoors{x_coor: 6, y_coor: 0},
     ];
 
+    pub fn topleft_coors_arr() -> [DigitCoors; 9] {DigitCoors::TOPLEFT_COORS_ARR}
+
+
+
 }
 
-struct NineSet {
+pub struct NineSet {
     possibilities: ArrayVec <[u32; 9]>,
     tiles: [DigitCoors; 9]
 }
 
 impl NineSet {
 
-    fn ninesets_from_board(board: SudokuBoard) => [NineSet; 27] {
+    pub fn ninesets_from_board(board: SudokuBoard) -> [NineSet; 27] {
         let dc_seed = DigitCoors {x_coor: 0, y_coor: 0};
         let ns_seed = NineSet {possibilities: ArrayVec::<[u32; 9]>::new(), tiles: [dc_seed; 9]};
         let mut ninesets_array = [ns_seed; 27];
@@ -116,7 +119,7 @@ impl NineSet {
             }
         }
         for ns in ninesets_array {
-            ns.remove_known();
+            ns.remove_known(board);
         }
         ninesets_array
     }
@@ -131,5 +134,20 @@ impl NineSet {
                 _ => ()
             }
         }
+    }
+
+}
+
+impl Display for NineSet {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let mut output_string = String::from("\nIncludes: ");
+        for dc in self.tiles {
+            output_string.push('[');
+            output_string.push(std::char::from_digit(dc.x_coor));
+            output_string.push_str(", ");
+            output_string.push(std::char::from_digit(dc.y_coor));
+            output_string.push(']');
+        }
+        write![f, "{}", output_string.as_str()]
     }
 }

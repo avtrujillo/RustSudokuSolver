@@ -5,3 +5,5 @@ authors = ["avtrujillo <alexandervtrujillo@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+
+arrayvec = "0.4.10"

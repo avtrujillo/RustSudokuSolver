@@ -5,17 +5,27 @@ pub use sudoku_digit::SudokuDigit as SudokuDigit;
 use std::iter::*;
 use std::fmt;
 
-
+#[derive(Clone, Copy)]
 pub struct SudokuBoard {
     tiles: [SudokuDigit; 81],
 }
-
-
 
 impl SudokuBoard {
 
     pub fn new(sd_array: [SudokuDigit; 81]) ->  SudokuBoard {
         SudokuBoard {tiles: sd_array}
+    }
+
+    fn make_guess(&mut self, digit_index: u32, guess_digit: u32) {
+        self.tiles[digit_index as usize] = SudokuDigit::Guess(guess_digit);
+    }
+
+    fn make_known(&mut self, digit_index: u32, known_digit: u32) {
+        self.tiles[digit_index as usize] = SudokuDigit::Known(known_digit)
+    }
+
+    fn check_for_known(&mut self) {
+
     }
 
     fn display_board(&self) -> String {

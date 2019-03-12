@@ -186,11 +186,19 @@ impl NineSet {
 
     const ONE_THRU_NINE: BTreeSet<u32> = (1..=9).collect();
 
+    pub fn panic_if_invalid(&self) {
+        if !(self.possibilities().is_subset(ONE_THRU_NINE)) {
+            panic!("nineset possibilities can only include one through nine");
+        }
+    }
+
     pub fn from_tile_coors(coors: [DigitCoors; 9]) -> Self {
-        NineSet {
+        let ns = NineSet {
             possibilities: Self::ONE_THRU_NINE,
             tile_coors: coors
-        }
+        };
+        ns.panic_if_invalid();
+        ns
     }
 
     pub fn ninesets_from_board(board: SudokuBoard) -> [NineSet; 27] {

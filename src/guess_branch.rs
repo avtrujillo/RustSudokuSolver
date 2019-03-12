@@ -1,40 +1,42 @@
 use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_board::SudokuDigit as SudokuDigit;
 use std::fmt;
-
+/*
 #[macro_use]
 use crate::sd_macros::array_from_take;
 #[macro_use]
 use crate::sd_macros::array_from_block_over_range;
 #[macro_use]
 use crate::sd_macros::n_element_filter;
-
+*/
 use std::fmt::Display as Display;
 
-use arrayvec::ArrayVec;
+//use arrayvec::ArrayVec;
 use std::collections::BTreeSet;
 
 type NineSetCoors = [DigitCoors; 9];
 
+#[derive(Clone, Copy)]
 pub struct GuessBranch {
 
     board: SudokuBoard,
-    children: Vec<Self>,
+    //children: Vec<Self>,
 
 }
 
 impl GuessBranch {
 
 
-
+/*
     fn new(&mut self, guess_index: u32, guess_digit: u32, board: SudokuBoard) -> GuessBranch {
-        let mut new_branch = GuessBranch { board: board.clone(), children: vec![] };
+        let mut new_branch = GuessBranch { board: board.clone() };
         new_branch.make_guess(guess_index, guess_digit);
         new_branch
     }
-
+*/
 }
 
+#[derive(Clone, Copy)]
 struct DigitCoors {
     x_coor: u32,
     y_coor: u32
@@ -74,7 +76,7 @@ impl DigitCoors {
         let column_seed = [Self::from_index(0); 9];
         let mut columns_arr = [column_seed; 9];
         for n in 0..=8 {
-            columns_arr[n] = columns_coors(n);
+            columns_arr[n] = Self::column_coors(n as u32);
         }
         columns_arr
         /*
@@ -97,7 +99,7 @@ impl DigitCoors {
         let row_seed = [Self::from_index(0); 9];
         let mut rows_arr = [row_seed; 9];
         for n in 0..=8 {
-            rows_arr[n] = row_coors(n);
+            rows_arr[n] = Self::row_coors(n as u32);
         }
         rows_arr
     }
@@ -121,8 +123,8 @@ impl DigitCoors {
         let ns_coors_seed = [Self::from_index(0); 9];
         let mut ns_coors_arr = [ns_coors_seed; 9];
 
-        for (ind, tl) in topleft_coors().enumerate() {
-            ns_coors_arr[ind] = square_coors_from_topleft(tl);
+        for (ind, tl) in Self::topleft_coors().iter().enumerate() {
+            ns_coors_arr[ind] = Self::square_coors_from_topleft(*tl);
         }
 
         ns_coors_arr
@@ -132,12 +134,12 @@ impl DigitCoors {
 
         let mut nsc_arr = [DigitCoors {x_coor: 0, y_coor: 0}; 9];
 
-        for x_offset in (0..=2) {
-            for y_offset in (0..=2) {
-                let nsc_ind = x_offset * 3 + y_offset
+        for x_offset in 0..=2 {
+            for y_offset in 0..=2 {
+                let nsc_ind = x_offset * 3 + y_offset;
                 nsc_arr[nsc_ind] = DigitCoors {
-                    x_coor: topleft.x_coor() + x_offset,
-                    y_coor: topleft.y_coor() + y_offset
+                    x_coor: topleft.x_coor + (x_offset as u32),
+                    y_coor: topleft.y_coor + (y_offset as u32)
                 };
             }
         }
@@ -177,9 +179,10 @@ impl DigitCoors {
 
 }
 
+#[derive(Clone)]
 pub struct NineSet {
     possibilities: BTreeSet<u32>,
-    tile_coors: [DigitCoors; 9]
+    tile_coors: NineSetCoors
 }
 
 impl NineSet {
@@ -187,15 +190,15 @@ impl NineSet {
     const ONE_THRU_NINE: BTreeSet<u32> = (1..=9).collect();
 
     pub fn panic_if_invalid(&self) {
-        if !(self.possibilities().is_subset(ONE_THRU_NINE)) {
+        if !(self.possibilities.is_subset(&Self::ONE_THRU_NINE)) {
             panic!("nineset possibilities can only include one through nine");
         }
     }
 
-    pub fn from_tile_coors(coors: [DigitCoors; 9]) -> Self {
+    pub fn from_tile_coors(coors: NineSetCoors) -> Self {
         let ns = NineSet {
-            possibilities: Self::ONE_THRU_NINE,
-            tile_coors: coors
+            possibilities: (Self::ONE_THRU_NINE.clone()),
+            tile_coors: coors.clone()
         };
         ns.panic_if_invalid();
         ns
@@ -203,30 +206,28 @@ impl NineSet {
 
     pub fn ninesets_from_board(board: SudokuBoard) -> [NineSet; 27] {
         let dc_seed = DigitCoors {x_coor: 0, y_coor: 0};
-        let ns_seed = NineSet {possibilities: ArrayVec::<[u32; 9]>::new(), tiles: [dc_seed; 9]};
-        let mut ninesets_array = [ns_seed; 27];
-        for (i, ns_coors_arr) in DigitCoors::all_nineset_coors().enumerate() {
-            ninesets_array[i] = NineSet {possibilities: ArrayVec::<[u32; 9]>::new(), tiles: ns_coors_arr};
-            for (n, tile_coor) in ninesets_array[i].tiles().enumerate() {
-                ninesets_array[i].possibilities().push(n);
-            }
+        let ns_coor_seed = [dc_seed; 9];
+        let ns_seed = NineSet::from_tile_coors(ns_coor_seed);
+        let mut ninesets_array = [ns_seed.clone(); 27];
+        for (i, ns_coors_arr) in DigitCoors::all_nineset_coors().iter().enumerate() {
+            ninesets_array[i] = NineSet::from_tile_coors(*ns_coors_arr);
         }
-        for ns in ninesets_array {
+        for ns in ninesets_array.iter() {
             ns.remove_known(board);
         }
         ninesets_array
     }
 
     fn remove_known(&mut self, board: SudokuBoard) {
-        for dc in self.tile_coors() {
+        for dc in self.tile_coors.iter() {
             let ind = dc.to_index();
             let known_set =
             match board.tiles()[ind] {
                 SudokuDigit::Known(digit) => {
                     self.possibilities.retain( |poss| poss!= digit);
                 },
-                _ => ()
-            }
+                _ => (),
+            };
         }
     }
 
@@ -235,11 +236,11 @@ impl NineSet {
 impl Display for NineSet {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut output_string = String::from("\nIncludes: ");
-        for dc in self.tiles {
+        for dc in (*self).tile_coors.iter() {
             output_string.push('[');
-            output_string.push(std::char::from_digit(dc.x_coor));
+            output_string.push(std::char::from_digit(dc.x_coor, 10).expect("found nondigit character"));
             output_string.push_str(", ");
-            output_string.push(std::char::from_digit(dc.y_coor));
+            output_string.push(std::char::from_digit(dc.y_coor, 10).expect("found nondigit character"));
             output_string.push(']');
         }
         write![f, "{}", output_string.as_str()]

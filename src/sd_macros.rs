@@ -1,22 +1,29 @@
 #[macro_export]
 macro_rules! array_from_take {
-    ($source_iter:ident<$coll_type:ty>, $take_count:ident) => {
-        let mut take_iter = $source_iter.take($take_count);
-        let mut output_arr = [$coll_type::new(); $take_count];
+    ($source_iter:ident, $take_count:ident) => {
+        {let mut take_iter = $source_iter.take($take_count).peekable();
+        let mut output_arr = [take_iter.peek(); $take_count];
         for (ind, elem) in (0..($take_count - 1)).enumerate() {
             output_arr[ind] = elem;
         }
-        output_arr
+        output_arr}
     }
 }
 
+#[macro_use]
+pub(crate) use crate::sd_macros::array_from_take;
+
 #[macro_export]
 macro_rules! array_from_block_over_range {
-    ($source_range:item, $some_block:block) => {
-        source_iter = for n in $source_range $some_block;
-        array_from_take!(source_iter, $source_range.len())
+    ($source_range:ident, $some_block:block) => {
+        {let output_iter = $source_range.map($some_block);
+        let output_length = $source_range.len();
+        array_from_take!(output_iter, output_length)}
     }
 }
+
+#[macro_use]
+pub(crate) use crate::sd_macros::array_from_block_over_range;
 
 #[macro_export]
 macro_rules! n_element_filter {
@@ -42,3 +49,6 @@ macro_rules! n_element_filter {
         output_arr
     }
 }
+
+#[macro_use]
+pub(crate) use crate::sd_macros::n_element_filter;

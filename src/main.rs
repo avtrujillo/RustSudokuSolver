@@ -4,6 +4,8 @@ mod sudoku_board;
 mod sudoku_digit;
 mod sd_macros;
 
+use sd_macros::*;
+
 use sudoku_board::SudokuBoard as SudokuBoard;
 use sudoku_board::SudokuDigit as SudokuDigit;
 use guess_branch::NineSet as NineSet;

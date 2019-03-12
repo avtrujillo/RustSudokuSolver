@@ -1,4 +1,4 @@
-pub use sudoku_digit::SudokuDigit as SudokuDigit;
+pub use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 
 use std::iter::*;
 use std::fmt;

@@ -3,6 +3,7 @@ use crate::sudoku_board::SudokuDigit as SudokuDigit;
 use std::fmt;
 use crate::TAKE_COUNT;
 use crate::NineSetCoors as NineSetCoors;
+use std::cmp::PartialEq;
 
 #[macro_use]
 use crate::sd_macros::array_from_take;
@@ -18,7 +19,7 @@ use crate::sd_macros::n_element_filter;
 use std::fmt::Display as Display;
 
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub struct DigitCoors {
     pub x_coor: u32,
     pub y_coor: u32
@@ -29,12 +30,12 @@ impl DigitCoors {
 
 
 
-    pub fn from_index(ind: u32) -> Self {
-        Self {x_coor:(ind % 9), y_coor: ind / 9}
+    pub fn from_index(ind: usize) -> Self {
+        Self {x_coor:(ind as u32 % 9), y_coor: ind as u32 / 9}
     }
 
-    pub fn to_index(&self) -> u32 {
-        (self.y_coor * 9) + self.x_coor
+    pub fn to_index(&self) -> usize {
+        ((self.y_coor * 9) + self.x_coor) as usize
     }
 
     pub fn all_nineset_coors() -> [NineSetCoors; 27] {

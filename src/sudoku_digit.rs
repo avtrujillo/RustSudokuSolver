@@ -3,8 +3,9 @@ pub use std::iter::*;
 pub use std::str::Chars;
 pub use std::io::Read;
 pub use std::fmt;
+use std::cmp::PartialEq;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
     Known(u32),
     Guess(u32),

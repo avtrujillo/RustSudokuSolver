@@ -2,17 +2,35 @@
 macro_rules! array_from_take {
     ($source_iter:ident, $take_count:ident) => {
         {let mut take_iter = $source_iter.take($take_count).peekable();
-        let mut output_arr = [take_iter.peek(); $take_count];
-        for (ind, elem) in (0..($take_count - 1)).enumerate() {
-            output_arr[ind] = elem;
+        let mut output_arr = [*(take_iter.peek().expect()); $take_count];
+        for (ind) in (0..($take_count - 1)) {
+            output_arr[ind] = take_iter.next();
         }
         output_arr}
     }
 }
 
 #[macro_use]
-pub(crate) use crate::sd_macros::array_from_take;
+pub(crate) use array_from_take;
 
+#[macro_export]
+macro_rules!twenty_seven {
+    ($to_repeat:expr) => {
+        [
+            $to_repeat, $to_repeat, $to_repeat, $to_repeat, $to_repeat,
+            $to_repeat, $to_repeat, $to_repeat, $to_repeat, $to_repeat,
+            $to_repeat, $to_repeat, $to_repeat, $to_repeat, $to_repeat,
+            $to_repeat, $to_repeat, $to_repeat, $to_repeat, $to_repeat,
+            $to_repeat, $to_repeat, $to_repeat, $to_repeat, $to_repeat,
+            $to_repeat, $to_repeat
+        ]
+    }
+}
+
+#[macro_use]
+pub(crate) use twenty_seven;
+
+/*
 #[macro_export]
 macro_rules! array_from_block_over_range {
     ($source_range:ident, $some_block:block) => {
@@ -52,3 +70,4 @@ macro_rules! n_element_filter {
 
 #[macro_use]
 pub(crate) use crate::sd_macros::n_element_filter;
+*/

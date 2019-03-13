@@ -1,9 +1,14 @@
 use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_board::SudokuDigit as SudokuDigit;
 use std::fmt;
-/*
+use crate::TAKE_COUNT;
+
 #[macro_use]
 use crate::sd_macros::array_from_take;
+
+#[macro_use]
+use crate::sd_macros::twenty_seven;
+/*
 #[macro_use]
 use crate::sd_macros::array_from_block_over_range;
 #[macro_use]
@@ -13,6 +18,7 @@ use std::fmt::Display as Display;
 
 //use arrayvec::ArrayVec;
 use std::collections::BTreeSet;
+use std::collections::hash_set::Difference;
 
 type NineSetCoors = [DigitCoors; 9];
 
@@ -37,7 +43,7 @@ impl GuessBranch {
 }
 
 #[derive(Clone, Copy)]
-struct DigitCoors {
+pub struct DigitCoors {
     x_coor: u32,
     y_coor: u32
 }
@@ -58,13 +64,13 @@ impl DigitCoors {
     pub fn all_nineset_coors() -> [NineSetCoors; 27] {
         let nsc_seed = [Self::from_index(0); 9];
         let mut nsc_arr = [nsc_seed; 27];
-        let nsc_iter = Self::all_column_coors().iter().chain(
-            Self::all_row_coors().iter().chain(
-                Self::all_square_coors().iter()
-            )
-        );
-        for (ind, nsc) in nsc_iter.enumerate() {
-            nsc_arr[ind] = *nsc;
+        let columns = Self::all_column_coors();
+        let rows = Self::all_row_coors();
+        let squares = Self::all_square_coors();
+        let nsc_triples_arr = [columns, rows, squares];
+        let nsc_vec: Vec<&NineSetCoors> = nsc_triples_arr.iter().flat_map( |n| n.iter()).collect();
+        for (ind, nsc) in nsc_vec.iter().enumerate() {
+            nsc_arr[ind] = **nsc;
         }
         nsc_arr
 
@@ -185,52 +191,70 @@ pub struct NineSet {
     tile_coors: NineSetCoors
 }
 
+//static ONE_THRU_NINE: BTreeSet<u32> = (1..=9).collect();
+
 impl NineSet {
 
-    const ONE_THRU_NINE: BTreeSet<u32> = (1..=9).collect();
+    fn one_thru_nine() -> BTreeSet<u32> {
+        (1..=9).collect()
+    }
 
     pub fn panic_if_invalid(&self) {
-        if !(self.possibilities.is_subset(&Self::ONE_THRU_NINE)) {
+        if !(self.possibilities.is_subset(&Self::one_thru_nine())) {
             panic!("nineset possibilities can only include one through nine");
         }
     }
 
+
+
     pub fn from_tile_coors(coors: NineSetCoors) -> Self {
         let ns = NineSet {
-            possibilities: (Self::ONE_THRU_NINE.clone()),
+            possibilities: Self::one_thru_nine(),
             tile_coors: coors.clone()
         };
         ns.panic_if_invalid();
         ns
     }
 
+
+/*
+    fn nineset_seeds_27() -> [NineSet; 27] {
+        //let take_count = 27;
+        let seeds_iter = (0..27).into_iter().map( |_|
+            NineSet::from_tile_coors([DigitCoors {x_coor: 0, y_coor: 0}; 9])
+        );
+        array_from_take!(seeds_iter, TAKE_COUNT)
+    }
+*/
     pub fn ninesets_from_board(board: SudokuBoard) -> [NineSet; 27] {
-        let dc_seed = DigitCoors {x_coor: 0, y_coor: 0};
-        let ns_coor_seed = [dc_seed; 9];
-        let ns_seed = NineSet::from_tile_coors(ns_coor_seed);
-        let mut ninesets_array = [ns_seed.clone(); 27];
+        //let dc_seed = DigitCoors {x_coor: 0, y_coor: 0};
+        //let ns_coor_seed: [DigitCoors; 9] = [DigitCoors {x_coor: 0, y_coor: 0}; 9];
+        //let ns_seed = NineSet::from_tile_coors(ns_coor_seed);
+        let mut ninesets_array = twenty_seven!(NineSet::from_tile_coors([DigitCoors {x_coor: 0, y_coor: 0}; 9]));
         for (i, ns_coors_arr) in DigitCoors::all_nineset_coors().iter().enumerate() {
             ninesets_array[i] = NineSet::from_tile_coors(*ns_coors_arr);
         }
-        for ns in ninesets_array.iter() {
-            ns.remove_known(board);
+        for ns in ninesets_array.iter_mut() {
+            (*ns).remove_known(board);
         }
         ninesets_array
     }
 
     fn remove_known(&mut self, board: SudokuBoard) {
-        for dc in self.tile_coors.iter() {
-            let ind = dc.to_index();
-            let known_set =
-            match board.tiles()[ind] {
-                SudokuDigit::Known(digit) => {
-                    self.possibilities.retain( |poss| poss!= digit);
-                },
-                _ => (),
-            };
-        }
-    }
 
+        let known_set: BTreeSet<u32> = self.tile_coors.iter().filter_map( |dc|
+            match board.tiles()[dc.to_index() as usize] {
+                SudokuDigit::Known(digit) => {
+                    Some(digit)
+                },
+                _ => None,
+            }
+        ).collect();
+        if known_set.is_subset(&Self::one_thru_nine()) {
+            self.possibilities = Self::one_thru_nine().difference(&known_set).cloned().collect();
+        }
+        else { panic!("known_set should be a subset of ONE_THRU_NINE") };
+    }
 }
 
 impl Display for NineSet {

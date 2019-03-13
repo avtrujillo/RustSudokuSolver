@@ -41,6 +41,9 @@ impl SudokuBoard {
         };
         display_string
     }
+    pub fn tiles(&self) -> [SudokuDigit; 81] { // TODO: refactor so this doesn't have to be public
+        self.tiles
+    }
 }
 
 impl fmt::Display for SudokuBoard {

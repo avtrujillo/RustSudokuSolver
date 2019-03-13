@@ -2,13 +2,14 @@
 mod guess_branch;
 mod sudoku_board;
 mod sudoku_digit;
-//mod sd_macros;
 
-//use sd_macros::*;
+mod sd_macros;
 
 use sudoku_board::SudokuBoard as SudokuBoard;
 use sudoku_board::SudokuDigit as SudokuDigit;
 use guess_branch::NineSet as NineSet;
+
+static TAKE_COUNT: usize = 27;
 
 fn main() {
 

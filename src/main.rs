@@ -2,12 +2,16 @@
 mod guess_branch;
 mod sudoku_board;
 mod sudoku_digit;
+mod nineset;
+mod digit_coors;
 
 mod sd_macros;
 
 use sudoku_board::SudokuBoard as SudokuBoard;
 use sudoku_board::SudokuDigit as SudokuDigit;
-use guess_branch::NineSet as NineSet;
+use guess_branch::NineSetCoors as NineSetCoors;
+use digit_coors::DigitCoors as DigitCoors;
+use nineset::NineSet as NineSet;
 
 static TAKE_COUNT: usize = 27;
 

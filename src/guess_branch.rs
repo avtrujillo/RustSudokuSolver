@@ -56,8 +56,9 @@ impl GuessBranch {
     }
 
     fn run_ninesets(&mut self) -> BranchResult {
-        let ninesets_map: Vec<BranchResult> = self.ninesets.iter().map( |mut ns|
-            ns.remove_knowns_and_guesses(&self.board)
+        let board_clone = self.board.clone();
+        let ninesets_map: Vec<BranchResult> = self.ninesets.iter_mut().map( |ns|
+            ns.remove_knowns_and_guesses(&board_clone)
         ).collect();
         Self::process_ninesets_results(ninesets_map)
     }
@@ -68,10 +69,10 @@ impl GuessBranch {
             match br {
                 BranchResult::NoSolution => {return br;}, // if any one nineset has no solution, then the overall puzzle has no solution
                 BranchResult::Deduced(deduced_vec) => {
-                    match overall_result {
+                    match overall_result.clone() {
                         BranchResult::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec);},
                         BranchResult::InProgress | BranchResult::Solved | BranchResult::GuessNeeded => {
-                            overall_result = br;
+                            overall_result = BranchResult::Deduced(deduced_vec);
                         }
                         BranchResult::NoSolution => {panic!("Should be impossible")}
                     }
@@ -86,9 +87,10 @@ impl GuessBranch {
                 },
                 BranchResult::GuessNeeded => {
                     match overall_result {
-                        BranchResult::NoSolution => {panic!("Should be impossible")},
+                        BranchResult::NoSolution | BranchResult::Deduced(_) | BranchResult::InProgress =>
+                            {panic!("Should be impossible")},
                         BranchResult::Solved => {overall_result = BranchResult::GuessNeeded;},
-                        BranchResult::GuessNeeded | BranchResult::Solved | BranchResult::NoSolution => ()
+                        BranchResult::GuessNeeded | BranchResult::Solved | BranchResult::NoSolution => (),
                     }
                 },
                 BranchResult::Solved => ()
@@ -108,7 +110,7 @@ impl GuessBranch {
     }
 
 }
-
+#[derive(Clone)]
 pub enum BranchResult {
     Deduced(Vec<(u32, DigitCoors)>),
     InProgress,

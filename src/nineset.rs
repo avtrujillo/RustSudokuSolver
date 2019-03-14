@@ -96,7 +96,7 @@ impl NineSet {
             }
             else if known_set.len() == 1 {
                 self.possibilities = known_set;
-                BranchResult::Deduced(vec![((*known_set.iter().next().expect("This shouldn't be possible")),
+                BranchResult::Deduced(vec![((*self.possibilities.iter().next().expect("This shouldn't be possible")),
                                       self.deduced_coors(&board))])
             }
             else {

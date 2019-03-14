@@ -4,6 +4,7 @@ use crate::nineset::NineSet as NineSet;
 use crate::DigitCoors as DigitCoors;
 use std::fmt;
 use std::iter::Map;
+use std::vec::*;
 use crate::sudoku_digit::SudokuDigit::Guess;
 use crate::guess_branch::BranchResult::InProgress;
 
@@ -59,17 +60,34 @@ impl GuessBranch {
     }
 
     fn process_ninesets_results(ns_brs: Map<NineSet, BranchResult>) -> BranchResult {
-        let mut overall_result = BranchResult::InProgress;
+        let mut overall_result = BranchResult::Solved;
         for br in ns_brs {
             match br {
-                BranchResult::NoSolution | BranchResult::Deduced(digit) => {return br}, // if any one nineset has no solution, then the overall puzzle has no solution
-                BranchResult::Deduced(digit) => {overall_result == br},
-                BranchResult::InProgress => {
+                BranchResult::NoSolution => {return br}, // if any one nineset has no solution, then the overall puzzle has no solution
+                BranchResult::Deduced(deduced_vec) => {
                     match overall_result {
-                        BranchResult::Deduced(digit) => (),
-                        BranchResult::InProgress
+                        BranchResult::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec)},
+                        BranchResult::InProgress | BranchResult::Solved | BranchResult::GuessNeeded => {
+                            overall_result = br;
+                        }
+                        BranchResult::NoSolution => {panic!("Should be impossible")}
                     }
                 },
+                BranchResult::InProgress => {
+                    match overall_result {
+                        BranchResult::Deduced(preexisting_vec) | BranchResult::InProgress => (),
+                        BranchResult::GuessNeeded | BranchResult::Solved => {overall_result = BranchResult::InProgress;}
+                    }
+                    BranchResult::NoSolution => {panic!("Should be impossible")}
+                },
+                BranchResult::GuessNeeded => {
+                    match overall_result {
+                        BranchResult::NoSolution => {panic!("Should be impossible")},
+                        BranchResult::Solved => {overall_result = BranchResult::GuessNeeded},
+                        BranchResult::GuessNeeded | BranchResult::Solved | BranchResult::NoSolution => ()
+                    }
+                }
+                BranchResult::Solved => ()
             }
         };
         overall_result
@@ -87,7 +105,7 @@ impl GuessBranch {
 }
 
 pub enum BranchResult {
-    Deduced(u32, DigitCoors),
+    Deduced(Vec<(u32, DigitCoors)>),
     InProgress,
     GuessNeeded,
     Solved,

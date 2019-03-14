@@ -7,6 +7,7 @@ use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 use crate::NineSetCoors as NineSetCoors;
 use crate::DigitCoors as DigitCoors;
 use crate::guess_branch::BranchResult as BranchResult;
+use std::vec::*;
 
 #[macro_use]
 use crate::sd_macros::twenty_seven;
@@ -95,8 +96,8 @@ impl NineSet {
             }
             else if known_set.len() == 1 {
                 self.possibilities = known_set;
-                BranchResult::Deduced(*known_set.iter().next().expect("This shouldn't be possible"),
-                                      self.deduced_coors(&board))
+                BranchResult::Deduced(vec![((*known_set.iter().next().expect("This shouldn't be possible")),
+                                      self.deduced_coors(&board))])
             }
             else {
                 self.possibilities = Self::one_thru_nine().difference(&known_set).cloned().collect();

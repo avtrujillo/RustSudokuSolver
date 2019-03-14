@@ -72,7 +72,7 @@ impl NineSet {
         ninesets_array
     }
 
-    fn remove_knowns_and_guesses(&mut self, &board: &SudokuBoard) -> BranchResult {
+    pub fn remove_knowns_and_guesses(&mut self, &board: &SudokuBoard) -> BranchResult {
 
         match self.possibilities.iter().len() {
             0 => BranchResult::NoSolution,
@@ -91,7 +91,7 @@ impl NineSet {
             if known_set == self.possibilities {
                 BranchResult::GuessNeeded
             }
-            else if else if known_set.len() == 0 {
+            else if known_set.len() == 0 {
                 BranchResult::NoSolution
             }
             else if known_set.len() == 1 {

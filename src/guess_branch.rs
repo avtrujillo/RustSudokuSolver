@@ -5,6 +5,7 @@ use crate::DigitCoors as DigitCoors;
 use std::fmt;
 use std::iter::Map;
 use std::vec::*;
+use std::slice::Iter;
 use crate::sudoku_digit::SudokuDigit::Guess;
 use crate::guess_branch::BranchResult::InProgress;
 
@@ -43,8 +44,8 @@ impl GuessBranch {
             match branch_result {
                 BranchResult::Solved | BranchResult::NoSolution => {break branch_result},
                 BranchResult::GuessNeeded => {branch_result = self.make_guesses()},
-                BranchResult::Deduced(digit_value, digit_coors) => {
-                    self.set_deduced(digit_value, digit_coors);
+                BranchResult::Deduced(preexisting_vec) => {
+                    for deduced in preexisting_vec {self.set_deduced(deduced.0, deduced.1)};
                     branch_result = InProgress
                 },
                 BranchResult::InProgress => {
@@ -55,18 +56,20 @@ impl GuessBranch {
     }
 
     fn run_ninesets(&mut self) -> BranchResult {
-        let ninesets_map = self.ninesets.map(|ns| ns.remove_knowns_and_guesses())
-        NineSet::process_ninesets_results(ninesets_map)
+        let ninesets_map: Vec<BranchResult> = self.ninesets.iter().map( |mut ns|
+            ns.remove_knowns_and_guesses(&self.board)
+        ).collect();
+        Self::process_ninesets_results(ninesets_map)
     }
 
-    fn process_ninesets_results(ns_brs: Map<NineSet, BranchResult>) -> BranchResult {
+    fn process_ninesets_results(ns_brs: Vec<BranchResult>) -> BranchResult {
         let mut overall_result = BranchResult::Solved;
         for br in ns_brs {
             match br {
-                BranchResult::NoSolution => {return br}, // if any one nineset has no solution, then the overall puzzle has no solution
+                BranchResult::NoSolution => {return br;}, // if any one nineset has no solution, then the overall puzzle has no solution
                 BranchResult::Deduced(deduced_vec) => {
                     match overall_result {
-                        BranchResult::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec)},
+                        BranchResult::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec);},
                         BranchResult::InProgress | BranchResult::Solved | BranchResult::GuessNeeded => {
                             overall_result = br;
                         }
@@ -75,20 +78,22 @@ impl GuessBranch {
                 },
                 BranchResult::InProgress => {
                     match overall_result {
-                        BranchResult::Deduced(preexisting_vec) | BranchResult::InProgress => (),
+                        BranchResult::Deduced(_) | BranchResult::InProgress => (),
                         BranchResult::GuessNeeded | BranchResult::Solved => {overall_result = BranchResult::InProgress;}
-                    }
-                    BranchResult::NoSolution => {panic!("Should be impossible")}
+                        BranchResult::NoSolution => {panic!("Should be impossible")}
+                    };
+
                 },
                 BranchResult::GuessNeeded => {
                     match overall_result {
                         BranchResult::NoSolution => {panic!("Should be impossible")},
-                        BranchResult::Solved => {overall_result = BranchResult::GuessNeeded},
+                        BranchResult::Solved => {overall_result = BranchResult::GuessNeeded;},
                         BranchResult::GuessNeeded | BranchResult::Solved | BranchResult::NoSolution => ()
                     }
-                }
+                },
                 BranchResult::Solved => ()
-            }
+            };
+            ();
         };
         overall_result
     }

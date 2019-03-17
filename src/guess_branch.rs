@@ -11,8 +11,6 @@ use crate::sudoku_digit::SudokuDigit::Guess;
 use crate::sudoku_board::SudokuBoard as Board;
 use crate::guess_branch::BranchResult::InProgress;
 
-//use arrayvec::ArrayVec;
-
 pub type NineSetCoors = [DigitCoors; 9];
 
 #[derive(Clone)]

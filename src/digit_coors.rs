@@ -50,9 +50,6 @@ impl DigitCoors {
             nsc_arr[ind] = **nsc;
         }
         nsc_arr
-
-        // let ns_take_count = 27;
-        // array_from_take![coors_iter, ns_take_count]
     }
 
     fn all_column_coors() -> [NineSetCoors; 9] {
@@ -62,12 +59,6 @@ impl DigitCoors {
             columns_arr[n] = Self::column_coors(n as u32);
         }
         columns_arr
-        /*
-        let input_range = (0..=8);
-        let arr_length = 9;
-        let input_arr = array_from_take![input_range, arr_length];
-        array_from_block_over_range![input_arr, { |n| DigitCoors::column_coors(n) } ]
-        */
     }
 
     fn column_coors(column_x_coor: u32) -> NineSetCoors {
@@ -94,12 +85,6 @@ impl DigitCoors {
         }
         coors_arr
     }
-    /*
-        fn all_square_coors() -> [[DigitCoors; 9]; 9] {
-            let index_range = (0..=8);
-            array_from_block_over_range![index_range, { |n| DigitCoors::topleft_coors_arr()[n] } ]
-        }
-    */
 
     fn all_square_coors() -> [NineSetCoors; 9] {
 
@@ -142,22 +127,6 @@ impl DigitCoors {
         }
         coors_arr
     }
-    /*
-        const TOPLEFT_COORS_ARR: [DigitCoors; 9] = [
-            coors_arrayvec = ArrayVec<u32; 9>::new();
-            DigitCoors{x_coor: 0, y_coor: 0},
-            DigitCoors{x_coor: 3, y_coor: 0},
-            DigitCoors{x_coor: 6, y_coor: 0},
-            DigitCoors{x_coor: 0, y_coor: 3},
-            DigitCoors{x_coor: 3, y_coor: 3},
-            DigitCoors{x_coor: 6, y_coor: 3},
-            DigitCoors{x_coor: 0, y_coor: 6},
-            DigitCoors{x_coor: 3, y_coor: 6},
-            DigitCoors{x_coor: 6, y_coor: 6},
-        ];
-
-        pub fn topleft_coors_arr() -> [DigitCoors; 9] {DigitCoors::TOPLEFT_COORS_ARR}
-    */
 
 
 }

@@ -18,8 +18,6 @@ pub struct NineSet {
     tile_coors: NineSetCoors
 }
 
-//static ONE_THRU_NINE: BTreeSet<u32> = (1..=9).collect();
-
 impl NineSet {
 
     fn one_thru_nine() -> BTreeSet<u32> {
@@ -43,25 +41,11 @@ impl NineSet {
         ns
     }
 
-
-    /*
-        fn nineset_seeds_27() -> [NineSet; 27] {
-            //let take_count = 27;
-            let seeds_iter = (0..27).into_iter().map( |_|
-                NineSet::from_tile_coors([DigitCoors {x_coor: 0, y_coor: 0}; 9])
-            );
-            array_from_take!(seeds_iter, TAKE_COUNT)
-        }
-    */
-
     pub fn nineset_seed_array() -> [NineSet; 27] {
         twenty_seven!(NineSet::from_tile_coors([DigitCoors {x_coor: 0, y_coor: 0}; 9]))
     }
 
     pub fn ninesets_from_board(board: SudokuBoard) -> [NineSet; 27] {
-        //let dc_seed = DigitCoors {x_coor: 0, y_coor: 0};
-        //let ns_coor_seed: [DigitCoors; 9] = [DigitCoors {x_coor: 0, y_coor: 0}; 9];
-        //let ns_seed = NineSet::from_tile_coors(ns_coor_seed);
         let mut ninesets_array = Self::nineset_seed_array();
         for (i, ns_coors_arr) in DigitCoors::all_nineset_coors().iter().enumerate() {
             ninesets_array[i] = NineSet::from_tile_coors(*ns_coors_arr);

@@ -28,10 +28,6 @@ fn main() {
         _ => String::from("Error")
     };
     println!("{}", solution_message);
-    //let ns_array = NineSet::ninesets_from_board(sd_board);
-    //for ns in ns_array.iter() {
-    //    println!("{}", ns);
-    //}
 }
 
 

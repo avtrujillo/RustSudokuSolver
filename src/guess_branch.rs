@@ -13,7 +13,7 @@ use crate::guess_branch::BranchResult::InProgress;
 
 pub type NineSetCoors = [DigitCoors; 9];
 
-#[derive(Clone)]
+#[derive(Clone, Copy)]
 pub struct GuessBranch {
 
     board: SudokuBoard,
@@ -150,7 +150,7 @@ pub enum BranchResult {
 }
 
 impl BranchResult {
-    fn sort_results<'a, T>(results: 'a + T impl Iterator<Item = BranchResult>) -> [&Vec<BranchResult>; 5]
+    fn sort_results<'a, T>(results: 'a + T) -> [&Vec<BranchResult>; 5]
     where T: Iterator<Item = BranchResult>{
         let my_vec: Vec<BranchResult> = vec![];
         let (d, ip, gn, s, ns) = (&my_vec.clone(), &my_vec.clone(), &my_vec.clone(), &my_vec.clone(), &my_vec.clone());

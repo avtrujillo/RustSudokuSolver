@@ -12,33 +12,35 @@ use std::vec::*;
 #[macro_use]
 use crate::sd_macros::twenty_seven;
 
-#[derive(Clone)]
+use crate::possibilities::Possibilities;
+use crate::possibilities::PossProgress;
+use smallvec::SmallVec;
+
+#[derive(Clone, Copy)]
 pub struct NineSet {
-    possibilities: BTreeSet<u32>,
+    possibilities: Possibilities,
     tile_coors: NineSetCoors
 }
 
 impl NineSet {
-
-    fn one_thru_nine() -> BTreeSet<u32> {
-        (1..=9).collect()
-    }
-
-    pub fn panic_if_invalid(&self) {
-        if !(self.possibilities.is_subset(&Self::one_thru_nine())) {
-            panic!("nineset possibilities can only include one through nine");
+    /*
+        fn one_thru_nine() -> BTreeSet<u32> {
+            (1..=9).collect()
         }
-    }
 
+        pub fn panic_if_invalid(&self) {
+            if !(self.possibilities.is_subset(&Self::one_thru_nine())) {
+                panic!("nineset possibilities can only include one through nine");
+            }
+        }
+    */
 
 
     pub fn from_tile_coors(coors: NineSetCoors) -> Self {
-        let ns = NineSet {
-            possibilities: Self::one_thru_nine(),
+        NineSet {
+            possibilities: Possibilities::new(),
             tile_coors: coors.clone()
-        };
-        ns.panic_if_invalid();
-        ns
+        }
     }
 
     pub fn nineset_seed_array() -> [NineSet; 27] {
@@ -56,7 +58,44 @@ impl NineSet {
         ninesets_array
     }
 
+    fn update_poss(&mut self, &mut board: SudokuBoard) {
+        self.update_member_poss(board);
+        self.update_self_poss(board);
+    }
+
+    fn update_self_poss(&mut self, &board: SudokuBoard) {
+        let sds: SmallVec<u32> = self.tile_coors.iter().filter_map( |sd|
+            match digit {
+                SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => Some(digit),
+                SudokuDigit::Unknown(_) => None
+            }
+        ).collect();
+        let new_poss = Possibilities::new_exculding(sds);
+        if !new_poss.subset(&self.possibilities) {
+            panic!("Not a subset of previous possibilities")
+        }
+        else {
+            self.possibilities = new_poss
+        }
+    }
+
+    fn update_member_poss(&self, &mut board: SudokuBoard) {
+        let sds_map = self.tile_coors.iter().map( |tc| &mut *board[tc.to_index]);
+        for sd in sds.iter_mut() {
+            for n in self.eliminated().iter() {
+                sd.possibilities().eliminate(n);
+            }
+        }
+    }
+/*
     pub fn remove_knowns_and_guesses(&mut self, &board: &SudokuBoard) -> BranchResult {
+
+        let prog = self.possibilities.progress_report();
+
+        match prog {
+            PossProgress::NoSolution => BranchResult::NoSolution,
+            PossProgress::Solved(digit) => BranchResult::Deduced()
+        }
 
         match self.possibilities.iter().len() {
             0 => BranchResult::NoSolution,
@@ -89,7 +128,7 @@ impl NineSet {
             }
         }}
     }
-
+*/
     fn deduced_coors(&self, &board: &SudokuBoard) -> DigitCoors {
         board.tiles().iter().enumerate().filter_map( |(ind, tile)|
             if self.tile_coors.iter().any(|coor| *coor == DigitCoors::from_index(ind)) && *tile == SudokuDigit::Unknown {

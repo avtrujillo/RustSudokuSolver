@@ -12,6 +12,8 @@ use sudoku_board::SudokuDigit as SudokuDigit;
 use guess_branch::NineSetCoors as NineSetCoors;
 use digit_coors::DigitCoors as DigitCoors;
 use nineset::NineSet as NineSet;
+use guess_branch::BranchResult as BranchResult;
+use crate::guess_branch::GuessBranch;
 
 static TAKE_COUNT: usize = 27;
 
@@ -19,10 +21,17 @@ fn main() {
 
     let sd_array = SudokuDigit::get_puzzle_input();
     let sd_board = SudokuBoard::new(sd_array);
-    let ns_array = NineSet::ninesets_from_board(sd_board);
-    for ns in ns_array.iter() {
-        println!("{}", ns);
-    }
+    let puzzle_result = GuessBranch::solve_puzzle(sd_board);
+    let solution_message = match puzzle_result {
+        BranchResult::Solved(solution) => format!("Solved:\n{}", solution),
+        BranchResult::NoSolution => String::from("No Solution"),
+        _ => String::from("Error")
+    };
+    println!("{}", solution_message);
+    //let ns_array = NineSet::ninesets_from_board(sd_board);
+    //for ns in ns_array.iter() {
+    //    println!("{}", ns);
+    //}
 }
 
 

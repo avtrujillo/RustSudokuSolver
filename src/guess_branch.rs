@@ -8,6 +8,7 @@ use std::vec::*;
 use std::slice::Iter;
 use std::collections::HashMap;
 use crate::sudoku_digit::SudokuDigit::Guess;
+use crate::sudoku_board::SudokuBoard as Board;
 use crate::guess_branch::BranchResult::InProgress;
 
 //use arrayvec::ArrayVec;
@@ -32,6 +33,11 @@ impl GuessBranch {
         let mut new_branch = GuessBranch { board: branch_board, ninesets: branch_ninesets};
         new_branch.set_guess(guess_index, guess_digit);
         new_branch
+    }
+
+    pub fn solve_puzzle(board: SudokuBoard) -> BranchResult {
+        let mut trunk = GuessBranch{board: (board.clone()), ninesets: NineSet::ninesets_from_board(board)};
+        trunk.run_branch()
     }
 
     fn set_guess(&mut self, guess_index: u32, guess_digit: u32) {
@@ -63,7 +69,7 @@ impl GuessBranch {
         let ninesets_map: Vec<BranchResult> = self.ninesets.iter_mut().map( |ns|
             ns.remove_knowns_and_guesses(&board_clone)
         ).collect();
-        (Self::process_ninesets_results(ninesets_map), self.board.clone())
+        Self::process_ninesets_results(ninesets_map)
     }
 
     fn process_ninesets_results(ns_brs: Vec<BranchResult>) -> BranchResult {
@@ -108,11 +114,11 @@ impl GuessBranch {
     }
 
     fn make_guesses(&self) -> BranchResult {
-        let branches = self.create_guess_branches();
-        let results: Vec<(BranchResult, Board)> = branches.map(|branch|branch.run_ninesets());
-        let (d, ip, gn, s, ns) = BranchResult::sort_results(results.iter());
+        let mut branches = self.create_guess_branches();
+        let results: Vec<(BranchResult)> = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
+        let [d, ip, gn, s, ns] = BranchResult::sort_results(results.iter());
         if d.len() == 1 {
-            d[0]
+            d[0].clone()
         }
         else {
             BranchResult::NoSolution // Returns "NoSolution" when there are multiple solutions as well as when there are zero
@@ -121,12 +127,12 @@ impl GuessBranch {
     }
 
     fn create_guess_branches(&self) -> Vec<GuessBranch> {
-        self.board.tiles().filter(|tile| tile == SudokuDigit::Unkown).enumerate().map( |(ind, uk)|
-                self.ninesets.filter_map(|ns| ns.tile_coors.any( |coor|
+        self.board.tiles().iter().filter(|tile| **tile == SudokuDigit::Unknown).enumerate().map( |(ind, uk)|
+                self.ninesets.iter().filter_map(|ns| ns.tile_coors().any( |coor|
                     match (coor == DigitCoors::from_index(ind as usize)) {
                         false => None,
                         true => Some(ns.possibilities().map( |poss|
-                                GuessBranch::new(ind, poss, &self.board.clone())
+                                GuessBranch::new(ind as u32, poss, &self.board.clone())
                             )
                         ),
                     }
@@ -146,9 +152,10 @@ pub enum BranchResult {
 }
 
 impl BranchResult {
-    fn sort_results(results: impl Iterator) -> [Vec<BranchResult>; 5] {
+    fn sort_results<'a, T>(results: 'a + T impl Iterator<Item = BranchResult>) -> [&Vec<BranchResult>; 5]
+    where T: Iterator<Item = BranchResult>{
         let my_vec: Vec<BranchResult> = vec![];
-        let (d, ip, gn, s, ns) = (my_vec.copy(), my_vec.copy(), my_vec.copy(), my_vec.copy(), my_vec.copy());
+        let (d, ip, gn, s, ns) = (&my_vec.clone(), &my_vec.clone(), &my_vec.clone(), &my_vec.clone(), &my_vec.clone());
         for result in results {
             match result {
                 BranchResult::Deduced(_) => d,

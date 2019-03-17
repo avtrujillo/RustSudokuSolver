@@ -1,16 +1,16 @@
 use smallvec::SmallVec as SmallVec;
 
-pub struct possibilities {
+pub struct Possibilities {
     digits: [bool; 9] // "true" indicated that the digit (index + 1) is a possibility
 }
 
 #[derive(Clone, Copy)]
 impl possibilities {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self {digits: [true; 9]}
     }
 
-    fn new_excluding(excluded: SmallVec<impl Integer>) -> Self {
+    pub fn new_excluding(excluded: SmallVec<impl Integer>) -> Self {
         let mut poss = Self::new();
         for ex in excluded {
             poss.digits[(ex as usize) - 1] = false;
@@ -18,7 +18,7 @@ impl possibilities {
         poss
     }
 
-    fn copy_excluding(&self, excluded: SmallVec<impl Integer>) -> Self {
+    pub fn copy_excluding(&self, excluded: SmallVec<impl Integer>) -> Self {
         let mut poss = self.copy();
         for ex in excluded {
             poss.digits[(ex as usize) - 1] = false;
@@ -26,17 +26,17 @@ impl possibilities {
         poss
     }
 
-    fn eliminate(&mut self, elim: impl Integer) {
+    pub fn eliminate(&mut self, elim: impl Integer) {
         self.digits[(elim - 1) as usize] = false;
     }
 
-    fn copy_eliminate(&mut self, elim: impl Integer) -> Self {
+    pub fn copy_eliminate(&mut self, elim: impl Integer) -> Self {
         let mut poss = self.copy();
         poss.eliminate(elim);
         poss
     }
 
-    fn progress_report(&self) -> PossProgress {
+    pub fn progress_report(&self) -> PossProgress {
         match self.poss_count {
             0 => PossProgress::NoSolution,
             1 => PossProgress::Solved(self.get_solution()),

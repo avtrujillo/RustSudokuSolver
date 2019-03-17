@@ -4,12 +4,13 @@ pub use std::str::Chars;
 pub use std::io::Read;
 pub use std::fmt;
 use std::cmp::PartialEq;
+use crate::Possibilities;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
     Known(u32),
     Guess(u32),
-    Unknown
+    Unknown(Possibilities)
 }
 
 impl SudokuDigit {

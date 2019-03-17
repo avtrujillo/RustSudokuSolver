@@ -4,9 +4,12 @@ mod sudoku_board;
 mod sudoku_digit;
 mod nineset;
 mod digit_coors;
+mod possibilities;
 
 mod sd_macros;
 
+use possibilities::PossProgress as PossProgress;
+use possibilities::Possibilities as Possibilities;
 use sudoku_board::SudokuBoard as SudokuBoard;
 use sudoku_board::SudokuDigit as SudokuDigit;
 use guess_branch::NineSetCoors as NineSetCoors;

@@ -1,28 +1,28 @@
-use crate::sudoku_board::SudokuBoard as SudokuBoard;
-use crate::sudoku_board::SudokuDigit as SudokuDigit;
-use std::fmt;
-use crate::TAKE_COUNT;
-use crate::NineSetCoors as NineSetCoors;
-use std::cmp::PartialEq;
 
+
+//use std::fmt;
+//use crate::TAKE_COUNT;
+use crate::NineSetCoors as NineSetCoors;
+//use std::cmp::PartialEq;
+/*
 #[macro_use]
 use crate::sd_macros::array_from_take;
 
 #[macro_use]
 use crate::sd_macros::twenty_seven;
-/*
+
 #[macro_use]
 use crate::sd_macros::array_from_block_over_range;
 #[macro_use]
 use crate::sd_macros::n_element_filter;
 */
-use std::fmt::Display as Display;
+//use std::fmt::Display as Display;
 
 
 #[derive(Clone, Copy, PartialEq)]
 pub struct DigitCoors {
-    pub x_coor: u32,
-    pub y_coor: u32
+    pub x_coor: u8,
+    pub y_coor: u8
 }
 
 
@@ -31,7 +31,7 @@ impl DigitCoors {
 
 
     pub fn from_index(ind: usize) -> Self {
-        Self {x_coor:(ind as u32 % 9), y_coor: ind as u32 / 9}
+        Self {x_coor:(ind as u8 % 9), y_coor: ind as u8 / 9}
     }
 
     pub fn to_index(&self) -> usize {
@@ -56,15 +56,15 @@ impl DigitCoors {
         let column_seed = [Self::from_index(0); 9];
         let mut columns_arr = [column_seed; 9];
         for n in 0..=8 {
-            columns_arr[n] = Self::column_coors(n as u32);
+            columns_arr[n] = Self::column_coors(n as u8);
         }
         columns_arr
     }
 
-    fn column_coors(column_x_coor: u32) -> NineSetCoors {
+    fn column_coors(column_x_coor: u8) -> NineSetCoors {
         let mut coors_arr = [Self::from_index(0); 9];
         for n in 0..=8 {
-            coors_arr[n] = Self {x_coor: column_x_coor, y_coor: n as u32};
+            coors_arr[n] = Self {x_coor: column_x_coor, y_coor: n as u8};
         }
         coors_arr
     }
@@ -73,15 +73,15 @@ impl DigitCoors {
         let row_seed = [Self::from_index(0); 9];
         let mut rows_arr = [row_seed; 9];
         for n in 0..=8 {
-            rows_arr[n] = Self::row_coors(n as u32);
+            rows_arr[n] = Self::row_coors(n as u8);
         }
         rows_arr
     }
 
-    fn row_coors(column_y_coor: u32) -> NineSetCoors {
+    fn row_coors(column_y_coor: u8) -> NineSetCoors {
         let mut coors_arr = [Self::from_index(0); 9];
         for n in 0..=8 {
-            coors_arr[n] = Self {y_coor: column_y_coor, x_coor: n as u32};
+            coors_arr[n] = Self {y_coor: column_y_coor, x_coor: n as u8};
         }
         coors_arr
     }
@@ -106,8 +106,8 @@ impl DigitCoors {
             for y_offset in 0..=2 {
                 let nsc_ind = x_offset * 3 + y_offset;
                 nsc_arr[nsc_ind] = DigitCoors {
-                    x_coor: topleft.x_coor + (x_offset as u32),
-                    y_coor: topleft.y_coor + (y_offset as u32)
+                    x_coor: topleft.x_coor + (x_offset as u8),
+                    y_coor: topleft.y_coor + (y_offset as u8)
                 };
             }
         }

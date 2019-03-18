@@ -6,14 +6,14 @@ use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 use crate::NineSetCoors as NineSetCoors;
 use crate::DigitCoors as DigitCoors;
-use crate::guess_branch::BranchResult as BranchResult;
-use std::vec::*;
+//use crate::guess_branch::BranchResult as BranchResult;
+//use std::vec::*;
 
 #[macro_use]
 use crate::sd_macros::twenty_seven;
 
 use crate::possibilities::Possibilities;
-use crate::possibilities::PossProgress;
+//use crate::possibilities::PossProgress;
 use smallvec::SmallVec;
 
 #[derive(Clone, Copy)]
@@ -47,31 +47,31 @@ impl NineSet {
         twenty_seven!(NineSet::from_tile_coors([DigitCoors {x_coor: 0, y_coor: 0}; 9]))
     }
 
-    pub fn ninesets_from_board(board: SudokuBoard) -> [NineSet; 27] {
+    pub fn ninesets_from_board(board: &mut SudokuBoard) -> [NineSet; 27] {
         let mut ninesets_array = Self::nineset_seed_array();
         for (i, ns_coors_arr) in DigitCoors::all_nineset_coors().iter().enumerate() {
             ninesets_array[i] = NineSet::from_tile_coors(*ns_coors_arr);
         }
         for ns in ninesets_array.iter_mut() {
-            (*ns).remove_knowns_and_guesses(&board);
+            (*ns).update_poss(board);
         }
         ninesets_array
     }
 
-    fn update_poss(&mut self, &mut board: SudokuBoard) {
+    pub fn update_poss(&mut self, board: &mut SudokuBoard) {
         self.update_member_poss(board);
         self.update_self_poss(board);
     }
 
-    fn update_self_poss(&mut self, &board: SudokuBoard) {
-        let sds: SmallVec<u32> = self.tile_coors.iter().filter_map( |sd|
-            match digit {
+    fn update_self_poss(&mut self, board: &SudokuBoard) {
+        let sds: SmallVec<[u8; 9]> = self.tile_coors.iter().filter_map( |sd|
+            match board.tiles()[sd.to_index()] {
                 SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => Some(digit),
                 SudokuDigit::Unknown(_) => None
             }
         ).collect();
-        let new_poss = Possibilities::new_exculding(sds);
-        if !new_poss.subset(&self.possibilities) {
+        let new_poss = Possibilities::new_excluding(sds);
+        if !new_poss.is_subset_of(&self.possibilities) {
             panic!("Not a subset of previous possibilities")
         }
         else {
@@ -79,10 +79,10 @@ impl NineSet {
         }
     }
 
-    fn update_member_poss(&self, &mut board: SudokuBoard) {
-        let sds_map = self.tile_coors.iter().map( |tc| &mut *board[tc.to_index]);
+    fn update_member_poss(&self, board: &mut SudokuBoard) {
+        let sds = self.tile_coors.iter().map( |tc| board.tiles()[tc.to_index()]);
         for sd in sds.iter_mut() {
-            for n in self.eliminated().iter() {
+            for n in self.possibilities.eliminated().iter() {
                 sd.possibilities().eliminate(n);
             }
         }
@@ -130,14 +130,21 @@ impl NineSet {
     }
 */
     fn deduced_coors(&self, &board: &SudokuBoard) -> DigitCoors {
-        board.tiles().iter().enumerate().filter_map( |(ind, tile)|
-            if self.tile_coors.iter().any(|coor| *coor == DigitCoors::from_index(ind)) && *tile == SudokuDigit::Unknown {
+        let mut dc_iter = board.tiles().iter().enumerate().filter_map( |(ind, tile)| {
+            let is_unknown: bool = match *tile {
+                SudokuDigit::Unknown(_) => true,
+                _ => false
+            };
+            let correct_index_and_unknown = (self.tile_coors.iter().any(|coor|
+                *coor == DigitCoors::from_index(ind)) && is_unknown
+            );
+            if correct_index_and_unknown {
                 Some(DigitCoors::from_index(ind))
-            }
-            else {
+            } else {
                 None
             }
-        ).next().expect("There should be exactly one item")
+        });
+        dc_iter.next().expect("There should be exactly one item")
     }
 }
 
@@ -146,9 +153,9 @@ impl Display for NineSet {
         let mut output_string = String::from("\nIncludes: ");
         for dc in (*self).tile_coors.iter() {
             output_string.push('[');
-            output_string.push(std::char::from_digit(dc.x_coor, 10).expect("found nondigit character"));
+            output_string.push(std::char::from_digit(dc.x_coor as u32, 10).expect("found nondigit character"));
             output_string.push_str(", ");
-            output_string.push(std::char::from_digit(dc.y_coor, 10).expect("found nondigit character"));
+            output_string.push(std::char::from_digit(dc.y_coor as u32, 10).expect("found nondigit character"));
             output_string.push(']');
         }
         write![f, "{}", output_string.as_str()]

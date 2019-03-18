@@ -25,20 +25,20 @@ impl GuessBranch {
 
 
 
-    fn new(guess_index: u32, guess_digit: u32, board: &SudokuBoard) -> GuessBranch {
-        let branch_board = board.clone();
-        let branch_ninesets = NineSet::ninesets_from_board(branch_board);
+    fn new(guess_index: u8, guess_digit: u8, board: &SudokuBoard) -> GuessBranch {
+        let mut branch_board = board.clone();
+        let branch_ninesets = NineSet::ninesets_from_board(&mut branch_board);
         let mut new_branch = GuessBranch { board: branch_board, ninesets: branch_ninesets};
         new_branch.set_guess(guess_index, guess_digit);
         new_branch
     }
 
-    pub fn solve_puzzle(board: SudokuBoard) -> BranchResult {
-        let mut trunk = GuessBranch{board: (board.clone()), ninesets: NineSet::ninesets_from_board(board)};
+    pub fn solve_puzzle(board: &mut SudokuBoard) -> BranchResult {
+        let mut trunk = GuessBranch{board: (board.clone()), ninesets: NineSet::ninesets_from_board(&mut board)};
         trunk.run_branch()
     }
 
-    fn set_guess(&mut self, guess_index: u32, guess_digit: u32) {
+    fn set_guess(&mut self, guess_index: u8, guess_digit: u8) {
         (self.board.tiles())[guess_index as usize] = SudokuDigit::Guess(guess_digit);
     }
 
@@ -63,9 +63,9 @@ impl GuessBranch {
     }
 
     fn run_ninesets(&mut self) -> BranchResult {
-        let board_clone = self.board.clone();
+        let mut board_clone = self.board.clone();
         let ninesets_map: Vec<BranchResult> = self.ninesets.iter_mut().map( |ns|
-            ns.remove_knowns_and_guesses(&board_clone)
+            ns.update_poss(&mut board_clone)
         ).collect();
         Self::process_ninesets_results(ninesets_map)
     }
@@ -107,14 +107,14 @@ impl GuessBranch {
         overall_result
     }
 
-    fn set_deduced(&mut self, digit_value: u32, digit_coors: DigitCoors) {
+    fn set_deduced(&mut self, digit_value: u8, digit_coors: DigitCoors) {
         self.board.tiles()[digit_coors.to_index()] = SudokuDigit::Known(digit_value);
     }
 
     fn make_guesses(&self) -> BranchResult {
         let mut branches = self.create_guess_branches();
         let results: Vec<(BranchResult)> = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
-        let [d, ip, gn, s, ns] = BranchResult::sort_results(results.iter());
+        let [d, ip, gn, s, ns] = BranchResult::sort_results(results);
         if d.len() == 1 {
             d[0].clone()
         }
@@ -130,7 +130,7 @@ impl GuessBranch {
                     match (coor == DigitCoors::from_index(ind as usize)) {
                         false => None,
                         true => Some(ns.possibilities().map( |poss|
-                                GuessBranch::new(ind as u32, poss, &self.board.clone())
+                                GuessBranch::new(ind as u8, poss, &self.board.clone())
                             )
                         ),
                     }
@@ -142,7 +142,7 @@ impl GuessBranch {
 }
 #[derive(Clone)]
 pub enum BranchResult {
-    Deduced(Vec<(u32, DigitCoors)>),
+    Deduced(Vec<(u8, DigitCoors)>),
     InProgress,
     GuessNeeded,
     Solved(SudokuBoard),
@@ -150,18 +150,17 @@ pub enum BranchResult {
 }
 
 impl BranchResult {
-    fn sort_results<'a, T>(results: 'a + T) -> [&Vec<BranchResult>; 5]
-    where T: Iterator<Item = BranchResult>{
+    fn sort_results(results: Vec<BranchResult>) -> [Vec<BranchResult>; 5] {
         let my_vec: Vec<BranchResult> = vec![];
-        let (d, ip, gn, s, ns) = (&my_vec.clone(), &my_vec.clone(), &my_vec.clone(), &my_vec.clone(), &my_vec.clone());
-        for result in results {
+        let (d, ip, gn, s, ns) = (my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone());
+        for result in results.iter() {
             match result {
                 BranchResult::Deduced(_) => d,
                 BranchResult::InProgress => ip,
                 BranchResult::GuessNeeded => gn,
                 BranchResult::Solved(_) => s,
                 BranchResult::NoSolution => ns
-            }.push(result);
+            }.push(*result);
         };
         [d, ip, gn, s, ns]
     }

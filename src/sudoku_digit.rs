@@ -5,11 +5,12 @@ pub use std::io::Read;
 pub use std::fmt;
 use std::cmp::PartialEq;
 use crate::Possibilities;
+use smallvec::SmallVec;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
-    Known(u32),
-    Guess(u32),
+    Known(u8),
+    Guess(u8),
     Unknown(Possibilities)
 }
 
@@ -25,26 +26,16 @@ impl SudokuDigit {
     }
 
     fn from_chars(chars: Chars) -> [SudokuDigit; 81] {
-        let mut fm = chars.filter_map(|c| SudokuDigit::digit_match(c));
-
-        let mut digit_array = [SudokuDigit::Unknown; 81];
-
-        for i in 0..80 {
-            let next_digit = match fm.next() {
-                Some(digit) => digit,
-                None => panic!("Incorrect number of digits read from file: {}", i)
-            };
-            digit_array[i] = next_digit;
-        }
-
-        digit_array
+        let digits_sv: SmallVec<[SudokuDigit; 81]>;
+        digits_sv = chars.filter_map(|c| SudokuDigit::digit_match(c)).collect();
+        digits_sv.into_inner().unwrap()
     }
 
     fn digit_match(input_char: char) -> Option<SudokuDigit> {
         match input_char {
-            '_' => Some(SudokuDigit::Unknown),
+            '_' => Some(SudokuDigit::Unknown(Possibilities::new())),
             _ => match input_char.to_digit(10) {
-                Some(digit) => Some(SudokuDigit::Known(digit)),
+                Some(digit) => Some(SudokuDigit::Known(digit as u8)),
                 None => None
             }
         }
@@ -52,7 +43,7 @@ impl SudokuDigit {
 
     pub fn debug_output(&self) -> String {
         match self {
-            SudokuDigit::Unknown => String::from("???"),
+            SudokuDigit::Unknown(_) => String::from("???"),
             SudokuDigit::Known(known_digit) => {
                 let match_output = format!("-{}-", known_digit);
                 match_output
@@ -66,9 +57,9 @@ impl SudokuDigit {
 
     pub fn display_char(&self) -> char {
         match self {
-            SudokuDigit::Unknown => '_',
+            SudokuDigit::Unknown(_) => '_',
             SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => {
-                std::char::from_digit(*digit, 10)
+                std::char::from_digit(*digit as u32, 10)
                     .expect("failed to convert digit into char")
             }
         }

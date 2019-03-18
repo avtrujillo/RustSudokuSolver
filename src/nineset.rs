@@ -6,6 +6,7 @@ use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 use crate::NineSetCoors as NineSetCoors;
 use crate::DigitCoors as DigitCoors;
+use crate::sudoku_digit::SDArr as SDArr;
 //use crate::guess_branch::BranchResult as BranchResult;
 //use std::vec::*;
 
@@ -80,12 +81,20 @@ impl NineSet {
     }
 
     fn update_member_poss(&self, board: &mut SudokuBoard) {
-        let sds = self.tile_coors.iter().map( |tc| board.tiles()[tc.to_index()]);
+        let sds: SmallVec<SDArr> = self.tile_coors.iter().map( |tc| {
+            board.tiles()[tc.to_index()]
+        }).collect();
         for sd in sds.iter_mut() {
             for n in self.possibilities.eliminated().iter() {
-                sd.possibilities().eliminate(n);
+                (*sd).eliminate_possibility(*n);
             }
         }
+    }
+
+    pub fn includes_coors(&self, coors: DigitCoors) -> bool {
+        self.tile_coors.iter().any(|coor| {
+            guess_branch_match(ind, coor)
+        })
     }
 /*
     pub fn remove_knowns_and_guesses(&mut self, &board: &SudokuBoard) -> BranchResult {

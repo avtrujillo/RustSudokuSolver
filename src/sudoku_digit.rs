@@ -6,6 +6,16 @@ pub use std::fmt;
 use std::cmp::PartialEq;
 use crate::Possibilities;
 use smallvec::SmallVec;
+use smallvec::Array;
+
+pub struct SDArr([SudokuDigit; 81]);
+
+unsafe impl smallvec::Array for SDArr {
+    type Item = SudokuDigit;
+    fn size() -> usize { 81 }
+    fn ptr(&self) -> *const SudokuDigit { self.as_ptr() }
+    fn ptr_mut(&mut self) -> *mut SudokuDigit { self.as_mut_ptr() }
+}
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
@@ -26,9 +36,9 @@ impl SudokuDigit {
     }
 
     fn from_chars(chars: Chars) -> [SudokuDigit; 81] {
-        let digits_sv: SmallVec<[SudokuDigit; 81]>;
+        let digits_sv: SmallVec<SDArr>;
         digits_sv = chars.filter_map(|c| SudokuDigit::digit_match(c)).collect();
-        digits_sv.into_inner().unwrap()
+        digits_sv.into_inner().unwrap().0
     }
 
     fn digit_match(input_char: char) -> Option<SudokuDigit> {
@@ -62,6 +72,13 @@ impl SudokuDigit {
                 std::char::from_digit(*digit as u32, 10)
                     .expect("failed to convert digit into char")
             }
+        }
+    }
+
+    pub fn eliminate_possibility(&mut self, elim: u8) {
+        match self {
+            SudokuDigit::Unknown(poss) => {poss.eliminate(elim);},
+            _ => {panic!("Can't eliminate possibilities from known digit");}
         }
     }
 

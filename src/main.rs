@@ -13,7 +13,7 @@ use sudoku_board::SudokuBoard as SudokuBoard;
 use sudoku_board::SudokuDigit as SudokuDigit;
 use guess_branch::NineSetCoors as NineSetCoors;
 use digit_coors::DigitCoors as DigitCoors;
-use guess_branch::ProgressState as BranchResult;
+use guess_branch::ProgressState as ProgressState;
 use crate::guess_branch::GuessBranch;
 
 fn main() {

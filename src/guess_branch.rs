@@ -11,7 +11,6 @@ use std::collections::HashMap;
 use itertools::*;
 use smallvec::*;
 
-use crate::sudoku_digit::SudokuDigit::Guess;
 use crate::sudoku_board::SudokuBoard as Board;
 use crate::guess_branch::ProgressState::MakingProgress;
 use crate::possibilities::Possibilities;
@@ -45,7 +44,7 @@ impl GuessBranch {
     }
 
     fn set_guess(&mut self, guess_index: usize, guess_digit: u8) {
-        (self.board.tiles())[guess_index] = SudokuDigit::Guess(guess_digit);
+        (self.board.tiles())[guess_index] = SudokuDigit::Known(guess_digit);
     }
 
     fn run_branch(&mut self) -> ProgressState {

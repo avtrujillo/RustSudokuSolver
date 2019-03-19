@@ -71,7 +71,7 @@ impl NineSet {
         let branch result = ProgressState::Stalled;
         self.tile_coors.iter().filter_map(|coors| {
             match board.tiles()[coors.to_index()] {
-                SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => Some(digit),
+                SudokuDigit::Known(digit) => Some(digit),
                 SudokuDigit::Unknown(_) => None
             }
         }).map(|digit| self.eliminate(digit)).fold(false, {|acc, b| })
@@ -80,7 +80,7 @@ impl NineSet {
     fn update_self_poss(&mut self, board: &SudokuBoard) {
         let sds: SmallVec<[u8; 9]> = self.tile_coors.iter().filter_map( |sd|
             match board.tiles()[sd.to_index()] {
-                SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => Some(digit),
+                SudokuDigit::Known(digit) => Some(digit),
                 SudokuDigit::Unknown(_) => None
             }
         ).collect();

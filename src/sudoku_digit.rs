@@ -3,6 +3,7 @@ pub use std::iter::*;
 pub use std::str::Chars;
 pub use std::io::Read;
 pub use std::fmt;
+pub use std::char;
 use std::cmp::PartialEq;
 use crate::Possibilities;
 use smallvec::SmallVec;
@@ -21,7 +22,6 @@ unsafe impl smallvec::Array for SDArr {
 #[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
     Known(u8),
-    Guess(u8),
     Unknown(Possibilities)
 }
 
@@ -59,18 +59,14 @@ impl SudokuDigit {
                 let match_output = format!("-{}-", known_digit);
                 match_output
             },
-            SudokuDigit::Guess(guess_digit) => {
-                let match_output = format!("<{}>", guess_digit);
-                match_output
-            }
         }
     }
 
     pub fn display_char(&self) -> char {
         match self {
             SudokuDigit::Unknown(_) => '_',
-            SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => {
-                std::char::from_digit(*digit as u32, 10)
+            SudokuDigit::Known(digit)=> {
+                char::from_digit(*digit as u32, 10)
                     .expect("failed to convert digit into char")
             }
         }

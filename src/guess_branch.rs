@@ -18,7 +18,7 @@ use crate::sudoku_digit::SDArr as SDArr;
 
 pub type NineSetCoors = [DigitCoors; 9];
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Debug)]
 pub struct GuessBranch {
 
     board: SudokuBoard,
@@ -52,7 +52,7 @@ impl GuessBranch {
 
         loop {
             match branch_result {
-                ProgressState::Solved(_) | ProgressState::NoSolution => {break branch_result},
+                ProgressState::Solved | ProgressState::NoSolution => {break branch_result},
                 ProgressState::Stalled => {
                     branch_result = self.make_guesses()
                 },
@@ -77,14 +77,14 @@ impl GuessBranch {
 
     fn process_ninesets_results(ns_brs: Vec<ProgressState>) -> ProgressState {
         let new_board = SudokuBoard::new([SudokuDigit::Unknown(Possibilities::new()); 81]);
-        let mut overall_result = ProgressState::Solved(new_board);
+        let mut overall_result = ProgressState::Solved;
         for br in ns_brs {
             match br {
                 ProgressState::NoSolution => {return br;}, // if any one nineset has no solution, then the overall puzzle has no solution
                 ProgressState::Deduced(deduced_vec) => {
                     match overall_result.clone() {
                         ProgressState::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec);},
-                        ProgressState::MakingProgress | ProgressState::Solved(_) | ProgressState::Stalled => {
+                        ProgressState::MakingProgress | ProgressState::Solved | ProgressState::Stalled => {
                             overall_result = ProgressState::Deduced(deduced_vec);
                         }
                         ProgressState::NoSolution => {panic!("Should be impossible")}
@@ -93,7 +93,7 @@ impl GuessBranch {
                 ProgressState::MakingProgress => {
                     match overall_result {
                         ProgressState::Deduced(_) | ProgressState::MakingProgress => (),
-                        ProgressState::Stalled | ProgressState::Solved(_) => {overall_result = ProgressState::MakingProgress;}
+                        ProgressState::Stalled | ProgressState::Solved => {overall_result = ProgressState::MakingProgress;}
                         ProgressState::NoSolution => {panic!("Should be impossible")}
                     };
 
@@ -102,11 +102,11 @@ impl GuessBranch {
                     match overall_result {
                         ProgressState::NoSolution | ProgressState::Deduced(_) | ProgressState::MakingProgress =>
                             {panic!("Should be impossible")},
-                        ProgressState::Solved(_) => {overall_result = ProgressState::Stalled;},
+                        ProgressState::Solved => {overall_result = ProgressState::Stalled;},
                         ProgressState::Stalled | ProgressState::NoSolution => (),
                     }
                 },
-                ProgressState::Solved(solution) => {overall_result = ProgressState::Solved(solution);}
+                ProgressState::Solved => {overall_result = ProgressState::Solved;}
             };
             ();
         };
@@ -150,15 +150,16 @@ impl GuessBranch {
 
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum ProgressState {
-    Deduced(SmallVec<(u8, DigitCoors)>),
+    Deduced(SmallVec<(DedArr)>),
     MakingProgress,
     Stalled,
-    Solved(SudokuBoard),
+    Solved,
     NoSolution
 }
 
+#[derive(Clone, Debug)]
 pub struct DedArr([(u8, DigitCoors); 81]);
 
 unsafe impl smallvec::Array for DedArr {
@@ -177,7 +178,7 @@ impl ProgressState {
                 ProgressState::Deduced(_) => d,
                 ProgressState::MakingProgress => ip,
                 ProgressState::Stalled => gn,
-                ProgressState::Solved(_) => s,
+                ProgressState::Solved => s,
                 ProgressState::NoSolution => ns
             }.push(*result);
         };

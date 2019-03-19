@@ -18,7 +18,7 @@ use crate::possibilities::Possibilities;
 use smallvec::SmallVec;
 use crate::guess_branch::ProgressState;
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Debug)]
 pub struct NineSet {
     possibilities: Possibilities,
     tile_coors: NineSetCoors,
@@ -68,13 +68,26 @@ impl NineSet {
     }
 
     fn update_self_2(&mut self, board: &SudokuBoard) -> ProgressState {
-        let branch result = ProgressState::Stalled;
+        match self.progress_cache {
+            ProgressState::NoSolution | ProgressState::Solved => self.progress_cache.clone(),
+            _ => {
+
+            }
+        };
+
         self.tile_coors.iter().filter_map(|coors| {
             match board.tiles()[coors.to_index()] {
                 SudokuDigit::Known(digit) => Some(digit),
                 SudokuDigit::Unknown(_) => None
             }
         }).map(|digit| self.eliminate(digit)).fold(false, {|acc, b| })
+    }
+
+    fn fold_prog(&self, acc: ProgressState, prog: ProgressState) {
+        match acc {
+
+        }
+
     }
 
     fn update_self_poss(&mut self, board: &SudokuBoard) {

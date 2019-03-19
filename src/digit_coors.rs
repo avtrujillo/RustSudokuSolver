@@ -4,7 +4,7 @@ use std::cmp::PartialEq;
 //use std::fmt::Display as Display;
 
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct DigitCoors {
     pub x_coor: u8,
     pub y_coor: u8

@@ -22,7 +22,7 @@ fn main() {
     let mut sd_board = SudokuBoard::new(sd_array);
     let puzzle_result = GuessBranch::solve_puzzle(&mut sd_board);
     let solution_message = match puzzle_result {
-        ProgressState::Solved(solution) => format!("Solved:\n{}", solution),
+        ProgressState::Solved => format!("Solved:\n{}", sd_board),
         ProgressState::NoSolution => String::from("No Solution"),
         _ => String::from("Error")
     };

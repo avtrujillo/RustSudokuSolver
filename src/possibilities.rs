@@ -1,7 +1,7 @@
 use smallvec::SmallVec as SmallVec;
 use std::cmp::PartialEq;
 
-#[derive(Clone, Copy, PartialEq)]
+#[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Possibilities {
     digits: [bool; 9] // "true" indicates that the digit (index + 1) is a possibility
 }

@@ -15,7 +15,7 @@ impl SudokuBoard {
     }
 
     fn make_guess(&mut self, digit_index: u8, guess_digit: u8) {
-        self.tiles[digit_index as usize] = SudokuDigit::Guess(guess_digit);
+        self.tiles[digit_index as usize] = SudokuDigit::Known(guess_digit);
     }
 
     fn make_known(&mut self, digit_index: u8, known_digit: u8) {

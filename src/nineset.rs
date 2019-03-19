@@ -90,54 +90,7 @@ impl NineSet {
             }
         }
     }
-    /*
-        pub fn includes_coors(&self, coors: DigitCoors) -> bool {
-            self.tile_coors.iter().any(|coor| {
-                guess_branch_match(ind, coor)
-            })
-        }
 
-        pub fn remove_knowns_and_guesses(&mut self, &board: &SudokuBoard) -> BranchResult {
-
-            let prog = self.possibilities.progress_report();
-
-            match prog {
-                PossProgress::NoSolution => BranchResult::NoSolution,
-                PossProgress::Solved(digit) => BranchResult::Deduced()
-            }
-
-            match self.possibilities.iter().len() {
-                0 => BranchResult::NoSolution,
-                1 => BranchResult::Solved,
-                _ => {
-
-
-                let known_set: BTreeSet<u32> = self.tile_coors.iter().filter_map( |dc|
-                    match board.tiles()[dc.to_index() as usize] {
-                        SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => {
-                            Some(digit)
-                       },
-                       _ => None,
-                    }
-                ).collect();
-                if known_set == self.possibilities {
-                    BranchResult::GuessNeeded
-                }
-                else if known_set.len() == 0 {
-                    BranchResult::NoSolution
-                }
-                else if known_set.len() == 1 {
-                    self.possibilities = known_set;
-                    BranchResult::Deduced(vec![((*self.possibilities.iter().next().expect("This shouldn't be possible")),
-                                          self.deduced_coors(&board))])
-                }
-                else {
-                    self.possibilities = Self::one_thru_nine().difference(&known_set).cloned().collect();
-                    BranchResult::InProgress
-                }
-            }}
-        }
-    */
     fn deduced_coors(&self, &board: &SudokuBoard) -> DigitCoors {
         let mut dc_iter = board.tiles().iter().enumerate().filter_map( |(ind, tile)| {
             let is_unknown: bool = match *tile {

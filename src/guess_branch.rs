@@ -147,28 +147,7 @@ impl GuessBranch {
             GuessBranch::new(ind, *p, &guess_board)
         }).collect()
     }
-/*
-    fn create_guess_branches(&self) -> Vec<GuessBranch> {
-        self.board.tiles().iter().filter(|tile| **tile == SudokuDigit::Unknown).enumerate().map( |(ind, uk)| {
-            self.ninesets.iter().filter_map(|ns| {
-                ns.tile_coors().any(|coor| {
-                    guess_branch_match(ind, coor)
-                })
-            })//.flatten()
-        }).collect()
-    }
 
-    fn guess_branch_match(&self, ind: u8, coor: DigitCoors) -> Option<GuessBranch> {
-        match (coor == DigitCoors::from_index(ind as usize)) {
-            false => None,
-            true => Some(
-                ns.possibilities().map(|poss| {
-                GuessBranch::new(ind, poss, &self.board.clone())
-                })
-            ),
-        }
-    }
-*/
 }
 #[derive(Clone)]
 pub enum BranchResult {

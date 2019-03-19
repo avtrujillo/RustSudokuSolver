@@ -1,21 +1,6 @@
-
-
 //use std::fmt;
-//use crate::TAKE_COUNT;
 use crate::NineSetCoors as NineSetCoors;
-//use std::cmp::PartialEq;
-/*
-#[macro_use]
-use crate::sd_macros::array_from_take;
-
-#[macro_use]
-use crate::sd_macros::twenty_seven;
-
-#[macro_use]
-use crate::sd_macros::array_from_block_over_range;
-#[macro_use]
-use crate::sd_macros::n_element_filter;
-*/
+use std::cmp::PartialEq;
 //use std::fmt::Display as Display;
 
 
@@ -27,7 +12,6 @@ pub struct DigitCoors {
 
 
 impl DigitCoors {
-
 
 
     pub fn from_index(ind: usize) -> Self {

@@ -16,8 +16,6 @@ use digit_coors::DigitCoors as DigitCoors;
 use guess_branch::BranchResult as BranchResult;
 use crate::guess_branch::GuessBranch;
 
-static TAKE_COUNT: usize = 27;
-
 fn main() {
 
     let sd_array = SudokuDigit::get_puzzle_input();

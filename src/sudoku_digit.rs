@@ -6,15 +6,15 @@ pub use std::fmt;
 use std::cmp::PartialEq;
 use crate::Possibilities;
 use smallvec::SmallVec;
-use smallvec::Array;
+use smallvec::*;
 
 pub struct SDArr([SudokuDigit; 81]);
 
 unsafe impl smallvec::Array for SDArr {
     type Item = SudokuDigit;
     fn size() -> usize { 81 }
-    fn ptr(&self) -> *const SudokuDigit { self.as_ptr() }
-    fn ptr_mut(&mut self) -> *mut SudokuDigit { self.as_mut_ptr() }
+    fn ptr(&self) -> *const SudokuDigit { self.0.as_ptr() }
+    fn ptr_mut(&mut self) -> *mut SudokuDigit { self.0.as_mut_ptr() }
 }
 
 #[derive(Clone, Copy, PartialEq)]

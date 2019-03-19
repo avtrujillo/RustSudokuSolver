@@ -43,7 +43,7 @@ impl GuessBranch {
     }
 
     fn set_guess(&mut self, guess_index: usize, guess_digit: u8) {
-        (self.board.tiles())[guess_index as] = SudokuDigit::Guess(guess_digit);
+        (self.board.tiles())[guess_index] = SudokuDigit::Guess(guess_digit);
     }
 
     fn run_branch(&mut self) -> BranchResult {
@@ -134,18 +134,14 @@ impl GuessBranch {
         let sds_iter = self.board.tiles().iter().enumerate();
         let unflattened: Vec<Vec<GuessBranch>> = sds_iter.filter_map(|(ind, sd)| {
             match *sd {
-                SudokuDigit::Unknown(poss) => Some(bar(ind, poss, self.board)),
+                SudokuDigit::Unknown(poss) => Some(Self::branches_from_possibilities(ind, poss, &self.board)),
                 _ => None
             }
         }).collect();
-        let mut branches_vec: Vec<GuessBranch> = vec![];
-        unflattened.into_iter().scan(branches_vec, { |acc, v|
-            Some(acc.extend(v))
-        }).last().expect(" ");
-        branches_vec
+        unflattened.into_iter().concat()
     }
 
-    fn branches_from_possibilities (ind: usize, poss: Possibilities, board: &SudokuBoard) -> Vec<GuessBranch> {
+    fn branches_from_possibilities(ind: usize, poss: Possibilities, board: &SudokuBoard) -> Vec<GuessBranch> {
         poss.remaining().iter().map(|p| {
             let guess_board = board.clone();
             GuessBranch::new(ind, *p, &guess_board)

@@ -1,12 +1,12 @@
 use std::fmt::Display as Display;
 use std::fmt;
-use std::collections::BTreeSet;
-use std::collections::hash_set::Difference;
+use itertools::*;
 use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 use crate::NineSetCoors as NineSetCoors;
 use crate::DigitCoors as DigitCoors;
 use crate::sudoku_digit::SDArr as SDArr;
+use crate::possibilities::PossProgress as PossProgress;
 //use crate::guess_branch::BranchResult as BranchResult;
 //use std::vec::*;
 
@@ -16,11 +16,13 @@ use crate::sd_macros::twenty_seven;
 use crate::possibilities::Possibilities;
 //use crate::possibilities::PossProgress;
 use smallvec::SmallVec;
+use crate::guess_branch::ProgressState;
 
 #[derive(Clone, Copy)]
 pub struct NineSet {
     possibilities: Possibilities,
-    tile_coors: NineSetCoors
+    tile_coors: NineSetCoors,
+    progress_cache: ProgressState
 }
 
 impl NineSet {
@@ -40,6 +42,7 @@ impl NineSet {
     pub fn from_tile_coors(coors: NineSetCoors) -> Self {
         NineSet {
             possibilities: Possibilities::new(),
+            progress_cache: ProgressState::Stalled,
             tile_coors: coors.clone()
         }
     }
@@ -62,6 +65,16 @@ impl NineSet {
     pub fn update_poss(&mut self, board: &mut SudokuBoard) {
         self.update_member_poss(board);
         self.update_self_poss(board);
+    }
+
+    fn update_self_2(&mut self, board: &SudokuBoard) -> ProgressState {
+        let branch result = ProgressState::Stalled;
+        self.tile_coors.iter().filter_map(|coors| {
+            match board.tiles()[coors.to_index()] {
+                SudokuDigit::Known(digit) | SudokuDigit::Guess(digit) => Some(digit),
+                SudokuDigit::Unknown(_) => None
+            }
+        }).map(|digit| self.eliminate(digit)).fold(false, {|acc, b| })
     }
 
     fn update_self_poss(&mut self, board: &SudokuBoard) {

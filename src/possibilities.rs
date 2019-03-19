@@ -29,8 +29,8 @@ impl Possibilities {
         poss
     }
 
-    pub fn eliminate(&mut self, elim: u8) {
-        self.set_digit_bool(elim, false);
+    pub fn eliminate(&mut self, elim: u8) -> bool {
+        self.set_digit_bool(elim, false)
     }
 
     pub fn copy_eliminate(&mut self, elim: u8) -> Self {
@@ -95,9 +95,11 @@ impl Possibilities {
         self.digits[ind]
     }
 
-    fn set_digit_bool(&mut self, digit: u8, set_to: bool) {
+    fn set_digit_bool(&mut self, digit: u8, set_to: bool) -> bool {
         let ind = (digit - 1) as usize;
+        progress = self.get_digit_bool(digit);
         self.digits[ind] = set_to;
+        progress
     }
 }
 

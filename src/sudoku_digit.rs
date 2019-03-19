@@ -7,6 +7,7 @@ use std::cmp::PartialEq;
 use crate::Possibilities;
 use smallvec::SmallVec;
 use smallvec::*;
+use crate::digit_coors::DigitCoors;
 
 pub struct SDArr([SudokuDigit; 81]);
 
@@ -75,10 +76,10 @@ impl SudokuDigit {
         }
     }
 
-    pub fn eliminate_possibility(&mut self, elim: u8) {
+    pub fn eliminate_possibility(&mut self, elim: u8) -> bool { // true iff progress was made
         match self {
-            SudokuDigit::Unknown(poss) => {poss.eliminate(elim);},
-            _ => {panic!("Can't eliminate possibilities from known digit");}
+            SudokuDigit::Unknown(poss) => {poss.eliminate(elim)},
+            _ => {panic!("Can't eliminate possibilities from known digit"); false}
         }
     }
 

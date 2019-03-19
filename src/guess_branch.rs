@@ -9,11 +9,13 @@ use std::vec::*;
 use std::slice::Iter;
 use std::collections::HashMap;
 use itertools::*;
+use smallvec::*;
 
 use crate::sudoku_digit::SudokuDigit::Guess;
 use crate::sudoku_board::SudokuBoard as Board;
-use crate::guess_branch::BranchResult::InProgress;
+use crate::guess_branch::ProgressState::MakingProgress;
 use crate::possibilities::Possibilities;
+use crate::sudoku_digit::SDArr as SDArr;
 
 pub type NineSetCoors = [DigitCoors; 9];
 
@@ -37,7 +39,7 @@ impl GuessBranch {
         new_branch
     }
 
-    pub fn solve_puzzle(board: &mut SudokuBoard) -> BranchResult {
+    pub fn solve_puzzle(board: &mut SudokuBoard) -> ProgressState {
         let mut trunk = GuessBranch{board: (board.clone()), ninesets: NineSet::ninesets_from_board(&mut board)};
         trunk.run_branch()
     }
@@ -46,67 +48,66 @@ impl GuessBranch {
         (self.board.tiles())[guess_index] = SudokuDigit::Guess(guess_digit);
     }
 
-    fn run_branch(&mut self) -> BranchResult {
-        let mut branch_result = BranchResult::InProgress;
+    fn run_branch(&mut self) -> ProgressState {
+        let mut branch_result = ProgressState::MakingProgress;
 
         loop {
             match branch_result {
-                BranchResult::Solved(_) | BranchResult::NoSolution => {break branch_result},
-                BranchResult::GuessNeeded => {
+                ProgressState::Solved(_) | ProgressState::NoSolution => {break branch_result},
+                ProgressState::Stalled => {
                     branch_result = self.make_guesses()
                 },
-                BranchResult::Deduced(preexisting_vec) => {
+                ProgressState::Deduced(preexisting_vec) => {
                     for deduced in preexisting_vec {self.set_deduced(deduced.0, deduced.1)};
-                    branch_result = InProgress
+                    branch_result = MakingProgress
                 },
-                BranchResult::InProgress => {
+                ProgressState::MakingProgress => {
                     branch_result = self.run_ninesets()
                 }
             }
         }
     }
 
-    fn run_ninesets(&mut self) -> BranchResult {
+    fn run_ninesets(&mut self) -> ProgressState {
         let mut board_clone = self.board.clone();
-        let ninesets_map: Vec<BranchResult> = self.ninesets.iter_mut().map( |ns| {
-            ns.update_poss(&mut board_clone);
-            ns
+        let nineset_results: Vec<ProgressState> = self.ninesets.iter_mut().map( |ns| {
+            ns.update_poss(&mut board_clone)
         }).collect();
-        Self::process_ninesets_results(ninesets_map)
+        Self::process_ninesets_results(nineset_results)
     }
 
-    fn process_ninesets_results(ns_brs: Vec<BranchResult>) -> BranchResult {
+    fn process_ninesets_results(ns_brs: Vec<ProgressState>) -> ProgressState {
         let new_board = SudokuBoard::new([SudokuDigit::Unknown(Possibilities::new()); 81]);
-        let mut overall_result = BranchResult::Solved(new_board);
+        let mut overall_result = ProgressState::Solved(new_board);
         for br in ns_brs {
             match br {
-                BranchResult::NoSolution => {return br;}, // if any one nineset has no solution, then the overall puzzle has no solution
-                BranchResult::Deduced(deduced_vec) => {
+                ProgressState::NoSolution => {return br;}, // if any one nineset has no solution, then the overall puzzle has no solution
+                ProgressState::Deduced(deduced_vec) => {
                     match overall_result.clone() {
-                        BranchResult::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec);},
-                        BranchResult::InProgress | BranchResult::Solved(_) | BranchResult::GuessNeeded => {
-                            overall_result = BranchResult::Deduced(deduced_vec);
+                        ProgressState::Deduced(mut preexisting_vec) => {preexisting_vec.extend(deduced_vec);},
+                        ProgressState::MakingProgress | ProgressState::Solved(_) | ProgressState::Stalled => {
+                            overall_result = ProgressState::Deduced(deduced_vec);
                         }
-                        BranchResult::NoSolution => {panic!("Should be impossible")}
+                        ProgressState::NoSolution => {panic!("Should be impossible")}
                     }
                 },
-                BranchResult::InProgress => {
+                ProgressState::MakingProgress => {
                     match overall_result {
-                        BranchResult::Deduced(_) | BranchResult::InProgress => (),
-                        BranchResult::GuessNeeded | BranchResult::Solved(_) => {overall_result = BranchResult::InProgress;}
-                        BranchResult::NoSolution => {panic!("Should be impossible")}
+                        ProgressState::Deduced(_) | ProgressState::MakingProgress => (),
+                        ProgressState::Stalled | ProgressState::Solved(_) => {overall_result = ProgressState::MakingProgress;}
+                        ProgressState::NoSolution => {panic!("Should be impossible")}
                     };
 
                 },
-                BranchResult::GuessNeeded => {
+                ProgressState::Stalled => {
                     match overall_result {
-                        BranchResult::NoSolution | BranchResult::Deduced(_) | BranchResult::InProgress =>
+                        ProgressState::NoSolution | ProgressState::Deduced(_) | ProgressState::MakingProgress =>
                             {panic!("Should be impossible")},
-                        BranchResult::Solved(_) => {overall_result = BranchResult::GuessNeeded;},
-                        BranchResult::GuessNeeded | BranchResult::NoSolution => (),
+                        ProgressState::Solved(_) => {overall_result = ProgressState::Stalled;},
+                        ProgressState::Stalled | ProgressState::NoSolution => (),
                     }
                 },
-                BranchResult::Solved(solution) => {overall_result = BranchResult::Solved(solution);}
+                ProgressState::Solved(solution) => {overall_result = ProgressState::Solved(solution);}
             };
             ();
         };
@@ -117,15 +118,15 @@ impl GuessBranch {
         self.board.tiles()[digit_coors.to_index()] = SudokuDigit::Known(digit_value);
     }
 
-    fn make_guesses(&self) -> BranchResult {
+    fn make_guesses(&self) -> ProgressState {
         let mut branches = self.create_guess_branches();
-        let results: Vec<(BranchResult)> = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
-        let [d, ip, gn, s, ns] = BranchResult::sort_results(results);
+        let results: Vec<(ProgressState)> = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
+        let [d, ip, gn, s, ns] = ProgressState::sort_results(results);
         if d.len() == 1 {
             d[0].clone()
         }
         else {
-            BranchResult::NoSolution // Returns "NoSolution" when there are multiple solutions as well as when there are zero
+            ProgressState::NoSolution // Returns "NoSolution" when there are multiple solutions as well as when there are zero
             // Not sure whether this behavior is desirable
         }
     }
@@ -149,26 +150,36 @@ impl GuessBranch {
     }
 
 }
+
 #[derive(Clone)]
-pub enum BranchResult {
-    Deduced(Vec<(u8, DigitCoors)>),
-    InProgress,
-    GuessNeeded,
+pub enum ProgressState {
+    Deduced(SmallVec<(u8, DigitCoors)>),
+    MakingProgress,
+    Stalled,
     Solved(SudokuBoard),
     NoSolution
 }
 
-impl BranchResult {
-    fn sort_results(results: Vec<BranchResult>) -> [Vec<BranchResult>; 5] {
-        let my_vec: Vec<BranchResult> = vec![];
+pub struct DedArr([(u8, DigitCoors); 81]);
+
+unsafe impl smallvec::Array for DedArr {
+    type Item = (u8, DigitCoors);
+    fn size() -> usize { 81 }
+    fn ptr(&self) -> *const (u8, DigitCoors) { self.0.as_ptr() }
+    fn ptr_mut(&mut self) -> *mut (u8, DigitCoors) { self.0.as_mut_ptr() }
+}
+
+impl ProgressState {
+    fn sort_results(results: Vec<ProgressState>) -> [Vec<ProgressState>; 5] {
+        let my_vec: Vec<ProgressState> = vec![];
         let (d, ip, gn, s, ns) = (my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone());
         for result in results.iter() {
             match result {
-                BranchResult::Deduced(_) => d,
-                BranchResult::InProgress => ip,
-                BranchResult::GuessNeeded => gn,
-                BranchResult::Solved(_) => s,
-                BranchResult::NoSolution => ns
+                ProgressState::Deduced(_) => d,
+                ProgressState::MakingProgress => ip,
+                ProgressState::Stalled => gn,
+                ProgressState::Solved(_) => s,
+                ProgressState::NoSolution => ns
             }.push(*result);
         };
         [d, ip, gn, s, ns]

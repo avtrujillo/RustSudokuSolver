@@ -14,15 +14,6 @@ use crate::possibilities::Possibilities;
 
 pub type NineSetCoors = [DigitCoors; 9];
 
-pub struct NSArr([NineSet; 27]);
-
-unsafe impl smallvec::Array for NSArr {
-    type Item = NineSet;
-    fn size() -> usize { 27 }
-    fn ptr(&self) -> *const NineSet { self.0.as_ptr() }
-    fn ptr_mut(&mut self) -> *mut NineSet { self.0.as_mut_ptr() }
-}
-
 #[derive(Clone, Debug)]
 pub struct GuessBranch {
 

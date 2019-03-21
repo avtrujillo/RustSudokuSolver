@@ -1,5 +1,6 @@
 use crate::SudokuDigit;
 use crate::DigitCoors;
+use crate::nineset::NineSet;
 
 pub struct SDArr([SudokuDigit; 81]);
 
@@ -43,3 +44,12 @@ impl PartialEq for DedArr {
 }
 
 impl Eq for DedArr {}
+
+pub struct NSArr([NineSet; 27]);
+
+unsafe impl smallvec::Array for NSArr {
+    type Item = NineSet;
+    fn size() -> usize { 27 }
+    fn ptr(&self) -> *const NineSet { self.0.as_ptr() }
+    fn ptr_mut(&mut self) -> *mut NineSet { self.0.as_mut_ptr() }
+}

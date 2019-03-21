@@ -13,19 +13,21 @@ pub enum ProgressState {
 }
 
 impl ProgressState {
-    pub fn sort_results(results: Vec<ProgressState>) -> [Vec<ProgressState>; 5] {
-        let my_vec: Vec<ProgressState> = vec![];
-        let (d, ip, gn, s, ns) = (my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec);
-        let mut vec_arr = [d, ip, gn, s, ns];
-        for result in results {
-            let vec_ind = match result {
+    pub fn sort_progs(progs: SmallVec<ProgArr>) -> [SmallVec<ProgArr>; 5] {
+        let mut sv: SmallVec<ProgArr> = SmallVec::<ProgArr>::new();
+        let (mut d, mut mp, mut st, mut sv, mut ns) = (
+            sv.clone(), sv.clone(), sv.clone(), sv.clone(), sv
+        );
+        let mut vec_arr = [d, mp, st, sv, ns];
+        for prog in progs {
+            let vec_ind = match prog {
                 ProgressState::Deduced(_) => 0,
                 ProgressState::MakingProgress => 1,
                 ProgressState::Stalled => 2,
                 ProgressState::Solved => 3,
                 ProgressState::NoSolution => 4
             };
-            vec_arr[vec_ind].push(result);
+            vec_arr[vec_ind].push(prog);
         };
         vec_arr
     }

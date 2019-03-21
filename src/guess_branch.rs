@@ -119,8 +119,9 @@ impl GuessBranch {
 
     fn make_guesses(&self) -> ProgressState {
         let mut branches = self.create_guess_branches();
-        let results: Vec<(ProgressState)> = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
-        let [d, _ip, _gn, _s, _ns] = ProgressState::sort_results(results);
+        let progs: SmallVec<ProgArr>;
+        progs = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
+        let [d, _ip, _gn, _s, _ns] = ProgressState::sort_progs(progs);
         if d.len() == 1 {
             d[0].clone()
         }

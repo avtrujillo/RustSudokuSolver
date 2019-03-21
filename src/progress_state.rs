@@ -1,5 +1,6 @@
 use crate::DedArr;
 use smallvec::*;
+use itertools::Itertools;
 
 #[derive(Clone, Debug)]
 pub enum ProgressState {
@@ -26,5 +27,22 @@ impl ProgressState {
             vec_arr[vec_ind].push(result);
         };
         vec_arr
+    }
+
+    pub fn fold_prog(acc: ProgressState, prog: ProgressState) -> ProgressState {
+        match (acc, prog) {
+            (ProgressState::NoSolution, _) | // NoSolution has highest priority
+            (_, ProgressState::NoSolution) => ProgressState::NoSolution,
+            (ProgressState::Solved, other) | // Solved has lowest priority
+            (other, ProgressState::Solved) => other,
+            (ProgressState::Stalled, other) | // Stalled has second lowest priority
+            (other, ProgressState::Stalled) => other,
+            (ProgressState::MakingProgress, other) |
+            (other, ProgressState::MakingProgress) => other, // MakingProgress has third lowest
+            (ProgressState::Deduced(d), ProgressState::Deduced(other_d)) => {
+                ProgressState::Deduced(d.into_iter().chain(other_d.into_iter()).unique().collect())
+            }
+        }
+
     }
 }

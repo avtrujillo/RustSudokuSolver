@@ -68,7 +68,7 @@ impl NineSet {
         let self_prog: ProgressState = self.update_member_poss(board);
         let other_prog: ProgressState = self.update_self_poss(board);
         [self_prog, other_prog].into_iter().fold(ProgressState::Solved, |acc, prog| {
-            Self::fold_prog(acc, prog.clone())
+            ProgressState::fold_prog(acc, prog.clone())
         })
     }
 
@@ -82,27 +82,10 @@ impl NineSet {
                         SudokuDigit::Unknown(_) => None
                     }
                 }).map(|digit| self.possibilities.eliminate(digit)).fold(ProgressState::Solved, |acc, prog| {
-                    Self::fold_prog(acc, prog)
+                    ProgressState::fold_prog(acc, prog)
                 })
             }
         }
-    }
-
-    fn fold_prog(acc: ProgressState, prog: ProgressState) -> ProgressState {
-        match (acc, prog) {
-            (ProgressState::NoSolution, _) | // NoSolution has highest priority
-            (_, ProgressState::NoSolution) => ProgressState::NoSolution,
-            (ProgressState::Solved, other) | // Solved has lowest priority
-            (other, ProgressState::Solved) => other,
-            (ProgressState::Stalled, other) | // Stalled has second lowest priority
-            (other, ProgressState::Stalled) => other,
-            (ProgressState::MakingProgress, other) |
-            (other, ProgressState::MakingProgress) => other, // MakingProgress has third lowest
-            (ProgressState::Deduced(d), ProgressState::Deduced(other_d)) => {
-                ProgressState::Deduced(d.into_iter().chain(other_d.into_iter()).unique().collect())
-            }
-        }
-
     }
 
     fn update_member_poss(&self, board: &mut SudokuBoard) -> ProgressState {
@@ -114,7 +97,7 @@ impl NineSet {
                 (*sd).eliminate_possibility(n)
             })
         }).flatten().fold(ProgressState::Solved, |acc, prog| {
-            Self::fold_prog(acc, prog)
+           ProgressState::fold_prog(acc, prog)
         })
     }
 

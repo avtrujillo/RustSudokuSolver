@@ -69,7 +69,7 @@ pub struct GBArr([GuessBranch; 81]);
 
 unsafe impl smallvec::Array for GBArr {
     type Item = GuessBranch;
-    fn size() -> usize {27}
+    fn size() -> usize {81}
     fn ptr(&self) -> *const GuessBranch { self.0.as_ptr() }
     fn ptr_mut(&mut self) -> *mut GuessBranch { self.0.as_mut_ptr() }
 }

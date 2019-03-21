@@ -11,6 +11,7 @@ use smallvec::*;
 
 use crate::possibilities::Possibilities;
 use crate::smallvec_arrays::ProgArr;
+use crate::smallvec_arrays::GBArr;
 //use crate::sudoku_digit::SDArr as SDArr;
 
 pub type NineSetCoors = [DigitCoors; 9];
@@ -131,18 +132,17 @@ impl GuessBranch {
         }
     }
 
-    fn create_guess_branches(&self) -> Vec<GuessBranch> {
+    fn create_guess_branches(&self) -> SmallVec<GBArr> {
         let sds_iter = self.board.tiles().iter().enumerate();
-        let unflattened: Vec<Vec<GuessBranch>> = sds_iter.filter_map(|(ind, sd)| {
+        sds_iter.filter_map(|(ind, sd)| {
             match *sd {
                 SudokuDigit::Unknown(poss) => Some(Self::branches_from_possibilities(ind, poss, &self.board)),
                 _ => None
             }
-        }).collect();
-        unflattened.into_iter().concat()
+        }).concat()
     }
 
-    fn branches_from_possibilities(ind: usize, poss: Possibilities, board: &SudokuBoard) -> Vec<GuessBranch> {
+    fn branches_from_possibilities(ind: usize, poss: Possibilities, board: &SudokuBoard) -> SmallVec<GBArr> {
         poss.remaining().iter().map(|p| {
             let guess_board = board.clone();
             GuessBranch::new(ind, *p, &guess_board)

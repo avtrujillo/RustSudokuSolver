@@ -76,7 +76,7 @@ impl SudokuDigit {
     pub fn eliminate_possibility(&mut self, elim: u8) -> ProgressState { // true iff progress was made
         match self {
             SudokuDigit::Unknown(poss) => {poss.eliminate(elim)},
-            _ => {panic!("Can't eliminate possibilities from known digit")}
+            _ => ProgressState::Stalled
         }
     }
 

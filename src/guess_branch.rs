@@ -49,7 +49,7 @@ impl GuessBranch {
     }
 
     fn set_guess(&mut self, guess_index: usize, guess_digit: u8) {
-        (self.board.tiles())[guess_index] = SudokuDigit::Known(guess_digit);
+        self.board.set_known(guess_index, guess_digit);
     }
 
     fn run_branch(&mut self) -> ProgressState {
@@ -119,7 +119,7 @@ impl GuessBranch {
     }
 
     fn set_deduced(&mut self, digit_value: u8, digit_coors: DigitCoors) {
-        self.board.tiles()[digit_coors.to_index()] = SudokuDigit::Known(digit_value);
+        self.board.set_known(digit_coors.to_index(), digit_value);
     }
 
     fn make_guesses(&self) -> ProgressState {

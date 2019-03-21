@@ -14,11 +14,7 @@ impl SudokuBoard {
         SudokuBoard {tiles: sd_array}
     }
 
-    fn make_guess(&mut self, digit_index: u8, guess_digit: u8) {
-        self.tiles[digit_index as usize] = SudokuDigit::Known(guess_digit);
-    }
-
-    fn make_known(&mut self, digit_index: u8, known_digit: u8) {
+    pub fn set_known(&mut self, digit_index: usize, known_digit: u8) {
         self.tiles[digit_index as usize] = SudokuDigit::Known(known_digit)
     }
 
@@ -30,7 +26,7 @@ impl SudokuBoard {
 
         let mut display_string = String::from(VERTICAL_BAR);
 
-        for (i, sd_digit) in self.tiles.into_iter().enumerate() {
+        for (i, sd_digit) in self.tiles.iter().enumerate() {
             display_string.push(' ');
             display_string.push(sd_digit.display_char());
             let append_str = if (i + 1) % 27 == 0 {VERTICAL_BAR}
@@ -41,8 +37,8 @@ impl SudokuBoard {
         };
         display_string
     }
-    pub fn tiles(&self) -> [SudokuDigit; 81] { // TODO: refactor so this doesn't have to be public
-        self.tiles
+    pub fn tiles(&self) -> &[SudokuDigit; 81] {
+        &self.tiles
     }
 }
 
@@ -62,7 +58,7 @@ static COLUMN_END: &'static str = " |";
 impl fmt::Debug for SudokuBoard {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut debug_string = String::new();
-        for (i, digit) in self.tiles.into_iter().enumerate() {
+        for (i, digit) in self.tiles.iter().enumerate() {
             debug_string.push_str(digit.debug_output().as_str());
             if (i + 1) % 9 == 0 {
                 debug_string.push_str("\n");

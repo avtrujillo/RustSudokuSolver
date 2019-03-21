@@ -17,6 +17,7 @@ use crate::possibilities::Possibilities;
 //use crate::possibilities::PossProgress;
 use smallvec::SmallVec;
 use crate::progress_state::ProgressState as ProgressState;
+use crate::smallvec_arrays::ProgArr;
 //use crate::guess_branch::ProgressState::Deduced;
 //use crate::guess_branch::DedArr;
 
@@ -65,40 +66,39 @@ impl NineSet {
     }
 
     pub fn update_poss(&mut self, board: &mut SudokuBoard) -> ProgressState {
-        let self_prog: ProgressState = self.update_member_poss(board);
-        let other_prog: ProgressState = self.update_self_poss(board);
-        [self_prog, other_prog].into_iter().fold(ProgressState::Solved, |acc, prog| {
-            ProgressState::fold_prog(acc, prog.clone())
-        })
+        let mut progs = SmallVec::<ProgArr>::new();
+        progs.push(self.update_member_poss(board));
+        progs.push(self.update_self_poss(board));
+        ProgressState::fold_prog(progs)
     }
 
     fn update_self_poss(&mut self, board: &SudokuBoard) -> ProgressState {
-        match self.progress_cache {
+        let overall_prog = match self.progress_cache {
             ProgressState::NoSolution | ProgressState::Solved => self.progress_cache.clone(),
             _ => {
-                self.tile_coors.clone().into_iter().filter_map(|coors| {
+                let progs: SmallVec<ProgArr>;
+                progs = self.tile_coors.clone().into_iter().filter_map(|coors| {
                     match board.tiles()[coors.to_index()] {
                         SudokuDigit::Known(digit) => Some(digit),
                         SudokuDigit::Unknown(_) => None
                     }
-                }).map(|digit| self.possibilities.eliminate(digit)).fold(ProgressState::Solved, |acc, prog| {
-                    ProgressState::fold_prog(acc, prog)
-                })
+                }).map(|digit| self.possibilities.eliminate(digit)).collect();
+                ProgressState::fold_prog(progs)
             }
-        }
+        };
+        self.progress_cache = overall_prog.clone();
+        overall_prog
     }
 
     fn update_member_poss(&self, board: &mut SudokuBoard) -> ProgressState {
         let mut sds: SmallVec<SDArr> = self.tile_coors.iter().map( |tc| {
             board.tiles()[tc.to_index()]
         }).collect();
-        sds.iter_mut().map ( move |sd| {
-            self.possibilities.eliminated().into_iter().map( move |n| {
-                (*sd).eliminate_possibility(n)
-            })
-        }).flatten().fold(ProgressState::Solved, |acc, prog| {
-           ProgressState::fold_prog(acc, prog)
-        })
+        let elims: SmallVec<[u8; 9]> = self.possibilities.eliminated();
+        let progs: SmallVec<ProgArr> = sds.into_iter().map ( |mut sd| {
+            sd.elim_mult_poss(elims.clone())
+        }).collect();
+        ProgressState::fold_prog(progs)
     }
 
     fn deduced_coors(&self, &board: &SudokuBoard) -> DigitCoors {

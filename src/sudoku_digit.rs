@@ -11,6 +11,7 @@ use smallvec::SmallVec;
 //use crate::digit_coors::DigitCoors;
 use crate::progress_state::ProgressState as ProgressState;
 use crate::SDArr;
+use crate::smallvec_arrays::ProgArr;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
@@ -70,6 +71,12 @@ impl SudokuDigit {
             SudokuDigit::Unknown(poss) => {poss.eliminate(elim)},
             _ => ProgressState::Stalled
         }
+    }
+
+    pub fn elim_mult_poss(&mut self, elims: SmallVec<[u8; 9]>) -> ProgressState {
+        let progs: SmallVec<ProgArr>;
+        progs = elims.into_iter().map(|elim| self.eliminate_possibility(elim)).collect();
+        ProgressState::fold_prog(progs)
     }
 
 }

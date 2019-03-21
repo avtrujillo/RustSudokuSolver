@@ -4,11 +4,11 @@ pub use std::str::Chars;
 pub use std::io::Read;
 pub use std::fmt;
 pub use std::char;
-use std::cmp::PartialEq;
+//use std::cmp::PartialEq;
 use crate::Possibilities;
 use smallvec::SmallVec;
-use smallvec::*;
-use crate::digit_coors::DigitCoors;
+//use smallvec::*;
+//use crate::digit_coors::DigitCoors;
 use crate::guess_branch::ProgressState;
 
 pub struct SDArr([SudokuDigit; 81]);
@@ -76,7 +76,7 @@ impl SudokuDigit {
     pub fn eliminate_possibility(&mut self, elim: u8) -> ProgressState { // true iff progress was made
         match self {
             SudokuDigit::Unknown(poss) => {poss.eliminate(elim)},
-            _ => {panic!("Can't eliminate possibilities from known digit"); ProgressState::NoSolution}
+            _ => {panic!("Can't eliminate possibilities from known digit")}
         }
     }
 

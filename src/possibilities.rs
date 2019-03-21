@@ -1,5 +1,4 @@
 use smallvec::SmallVec as SmallVec;
-use std::cmp::PartialEq;
 use crate::guess_branch::ProgressState;
 
 #[derive(Clone, Copy, PartialEq, Debug)]

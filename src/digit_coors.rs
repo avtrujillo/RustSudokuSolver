@@ -1,7 +1,5 @@
 //use std::fmt;
 use crate::NineSetCoors as NineSetCoors;
-use std::cmp::PartialEq;
-use std::hash::Hash;
 //use std::fmt::Display as Display;
 
 

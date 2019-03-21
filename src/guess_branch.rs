@@ -3,18 +3,14 @@ use crate::sudoku_board::SudokuDigit as SudokuDigit;
 use crate::nineset::NineSet as NineSet;
 use crate::DigitCoors as DigitCoors;
 
-use std::fmt;
-use std::iter::Map;
 use std::vec::*;
-use std::slice::Iter;
-use std::collections::HashMap;
+//use std::collections::HashMap;
 use itertools::*;
 use smallvec::*;
 
-use crate::sudoku_board::SudokuBoard as Board;
 use crate::guess_branch::ProgressState::MakingProgress;
 use crate::possibilities::Possibilities;
-use crate::sudoku_digit::SDArr as SDArr;
+//use crate::sudoku_digit::SDArr as SDArr;
 
 pub type NineSetCoors = [DigitCoors; 9];
 
@@ -161,7 +157,7 @@ impl GuessBranch {
 
 
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct DedArr([(u8, DigitCoors); 81]);
 
 unsafe impl smallvec::Array for DedArr {
@@ -174,7 +170,7 @@ unsafe impl smallvec::Array for DedArr {
 impl PartialEq for DedArr {
     fn eq(&self, other: &DedArr) -> bool {
         let mut eq_bool = true;
-        for ind in (0..=80) {
+        for ind in 0..=80 {
             if self.0[ind] != other.0[ind] {
                 eq_bool = false;
             }

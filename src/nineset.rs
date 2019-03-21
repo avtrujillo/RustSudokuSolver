@@ -6,7 +6,7 @@ use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 use crate::NineSetCoors as NineSetCoors;
 use crate::DigitCoors as DigitCoors;
 use crate::sudoku_digit::SDArr as SDArr;
-use crate::possibilities::PossProgress as PossProgress;
+//use crate::possibilities::PossProgress as PossProgress;
 //use crate::guess_branch::BranchResult as BranchResult;
 //use std::vec::*;
 
@@ -17,8 +17,8 @@ use crate::possibilities::Possibilities;
 //use crate::possibilities::PossProgress;
 use smallvec::SmallVec;
 use crate::guess_branch::ProgressState;
-use crate::guess_branch::ProgressState::Deduced;
-use crate::guess_branch::DedArr;
+//use crate::guess_branch::ProgressState::Deduced;
+//use crate::guess_branch::DedArr;
 
 #[derive(Clone, Debug)]
 pub struct NineSet {
@@ -64,9 +64,12 @@ impl NineSet {
         ninesets_array
     }
 
-    pub fn update_poss(&mut self, board: &mut SudokuBoard) {
-        self.update_member_poss(board);
-        self.update_self_poss(board);
+    pub fn update_poss(&mut self, board: &mut SudokuBoard) -> ProgressState {
+        let self_prog: ProgressState = self.update_member_poss(board);
+        let other_prog: ProgressState = self.update_self_poss(board);
+        [self_prog, other_prog].iter().fold(ProgressState::Solved, |acc, prog| {
+            Self::fold_prog(acc, *prog)
+        })
     }
 
     fn update_self_poss(&mut self, board: &SudokuBoard) -> ProgressState {
@@ -78,9 +81,9 @@ impl NineSet {
                         SudokuDigit::Known(digit) => Some(digit),
                         SudokuDigit::Unknown(_) => None
                     }
-                }).map(|digit| self.possibilities.eliminate(digit)).fold(ProgressState::Solved, (|acc, prog| {
+                }).map(|digit| self.possibilities.eliminate(digit)).fold(ProgressState::Solved, |acc, prog| {
                     Self::fold_prog(acc, prog)
-                }))
+                })
             }
         }
     }
@@ -101,32 +104,18 @@ impl NineSet {
         }
 
     }
-/*
-    fn update_self_poss(&mut self, board: &SudokuBoard) {
-        let sds: SmallVec<[u8; 9]> = self.tile_coors.iter().filter_map( |sd|
-            match board.tiles()[sd.to_index()] {
-                SudokuDigit::Known(digit) => Some(digit),
-                SudokuDigit::Unknown(_) => None
-            }
-        ).collect();
-        let new_poss = Possibilities::new_excluding(sds);
-        if !new_poss.is_subset_of(&self.possibilities) {
-            panic!("Not a subset of previous possibilities")
-        }
-        else {
-            self.possibilities = new_poss
-        }
-    }
-*/
-    fn update_member_poss(&self, board: &mut SudokuBoard) {
-        let sds: SmallVec<SDArr> = self.tile_coors.iter().map( |tc| {
+
+    fn update_member_poss(&self, board: &mut SudokuBoard) -> ProgressState {
+        let mut sds: SmallVec<SDArr> = self.tile_coors.iter().map( |tc| {
             board.tiles()[tc.to_index()]
         }).collect();
-        for sd in sds.iter_mut() {
-            for n in self.possibilities.eliminated().iter() {
+        sds.iter_mut().map ( |sd| {
+            self.possibilities.eliminated().iter().map( |n| {
                 (*sd).eliminate_possibility(*n);
-            }
-        }
+            })
+        }).flatten().fold(ProgressState::Solved, |acc, prog| {
+            Self::fold_prog(acc, prog)
+        })
     }
 
     fn deduced_coors(&self, &board: &SudokuBoard) -> DigitCoors {
@@ -135,9 +124,8 @@ impl NineSet {
                 SudokuDigit::Unknown(_) => true,
                 _ => false
             };
-            let correct_index_and_unknown = (self.tile_coors.iter().any(|coor|
-                *coor == DigitCoors::from_index(ind)) && is_unknown
-            );
+            let correct_index_and_unknown = self.tile_coors.iter().any(|coor|
+                *coor == DigitCoors::from_index(ind)) && is_unknown;
             if correct_index_and_unknown {
                 Some(DigitCoors::from_index(ind))
             } else {

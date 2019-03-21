@@ -17,6 +17,8 @@ use crate::possibilities::Possibilities;
 //use crate::possibilities::PossProgress;
 use smallvec::SmallVec;
 use crate::guess_branch::ProgressState;
+use crate::guess_branch::ProgressState::Deduced;
+use crate::guess_branch::DedArr;
 
 #[derive(Clone, Debug)]
 pub struct NineSet {
@@ -67,29 +69,39 @@ impl NineSet {
         self.update_self_poss(board);
     }
 
-    fn update_self_2(&mut self, board: &SudokuBoard) -> ProgressState {
+    fn update_self_poss(&mut self, board: &SudokuBoard) -> ProgressState {
         match self.progress_cache {
             ProgressState::NoSolution | ProgressState::Solved => self.progress_cache.clone(),
             _ => {
-
+                self.tile_coors.iter().filter_map(|coors| {
+                    match board.tiles()[coors.to_index()] {
+                        SudokuDigit::Known(digit) => Some(digit),
+                        SudokuDigit::Unknown(_) => None
+                    }
+                }).map(|digit| self.possibilities.eliminate(digit)).fold(ProgressState::Solved, (|acc, prog| {
+                    Self::fold_prog(acc, prog)
+                }))
             }
-        };
-
-        self.tile_coors.iter().filter_map(|coors| {
-            match board.tiles()[coors.to_index()] {
-                SudokuDigit::Known(digit) => Some(digit),
-                SudokuDigit::Unknown(_) => None
-            }
-        }).map(|digit| self.eliminate(digit)).fold(false, {|acc, b| })
+        }
     }
 
-    fn fold_prog(&self, acc: ProgressState, prog: ProgressState) {
-        match acc {
-
+    fn fold_prog(mut acc: ProgressState, prog: ProgressState) -> ProgressState {
+        match (acc, prog) {
+            (ProgressState::NoSolution, _) | // NoSolution has highest priority
+            (_, ProgressState::NoSolution) => ProgressState::NoSolution,
+            (ProgressState::Solved, other) | // Solved has lowest priority
+            (other, ProgressState::Solved) => other,
+            (ProgressState::Stalled, other) | // Stalled has second lowest priority
+            (other, ProgressState::Stalled) => other,
+            (ProgressState::MakingProgress, other) |
+            (other, ProgressState::MakingProgress) => other, // MakingProgress has third lowest
+            (ProgressState::Deduced(d), ProgressState::Deduced(other_d)) => {
+                ProgressState::Deduced(d.into_iter().chain(other_d.into_iter()).unique().collect())
+            }
         }
 
     }
-
+/*
     fn update_self_poss(&mut self, board: &SudokuBoard) {
         let sds: SmallVec<[u8; 9]> = self.tile_coors.iter().filter_map( |sd|
             match board.tiles()[sd.to_index()] {
@@ -105,7 +117,7 @@ impl NineSet {
             self.possibilities = new_poss
         }
     }
-
+*/
     fn update_member_poss(&self, board: &mut SudokuBoard) {
         let sds: SmallVec<SDArr> = self.tile_coors.iter().map( |tc| {
             board.tiles()[tc.to_index()]

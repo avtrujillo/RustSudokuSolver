@@ -9,6 +9,7 @@ use crate::Possibilities;
 use smallvec::SmallVec;
 use smallvec::*;
 use crate::digit_coors::DigitCoors;
+use crate::guess_branch::ProgressState;
 
 pub struct SDArr([SudokuDigit; 81]);
 
@@ -72,10 +73,10 @@ impl SudokuDigit {
         }
     }
 
-    pub fn eliminate_possibility(&mut self, elim: u8) -> bool { // true iff progress was made
+    pub fn eliminate_possibility(&mut self, elim: u8) -> ProgressState { // true iff progress was made
         match self {
             SudokuDigit::Unknown(poss) => {poss.eliminate(elim)},
-            _ => {panic!("Can't eliminate possibilities from known digit"); false}
+            _ => {panic!("Can't eliminate possibilities from known digit"); ProgressState::NoSolution}
         }
     }
 

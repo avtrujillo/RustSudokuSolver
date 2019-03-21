@@ -9,16 +9,8 @@ use crate::Possibilities;
 use smallvec::SmallVec;
 //use smallvec::*;
 //use crate::digit_coors::DigitCoors;
-use crate::guess_branch::ProgressState;
-
-pub struct SDArr([SudokuDigit; 81]);
-
-unsafe impl smallvec::Array for SDArr {
-    type Item = SudokuDigit;
-    fn size() -> usize { 81 }
-    fn ptr(&self) -> *const SudokuDigit { self.0.as_ptr() }
-    fn ptr_mut(&mut self) -> *mut SudokuDigit { self.0.as_mut_ptr() }
-}
+use crate::progress_state::ProgressState as ProgressState;
+use crate::SDArr;
 
 #[derive(Clone, Copy, PartialEq)]
 pub enum SudokuDigit {
@@ -40,7 +32,7 @@ impl SudokuDigit {
     fn from_chars(chars: Chars) -> [SudokuDigit; 81] {
         let digits_sv: SmallVec<SDArr>;
         digits_sv = chars.filter_map(|c| SudokuDigit::digit_match(c)).collect();
-        digits_sv.into_inner().unwrap().0
+        (*digits_sv.into_inner().unwrap().access()).clone()
     }
 
     fn digit_match(input_char: char) -> Option<SudokuDigit> {

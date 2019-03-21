@@ -2,13 +2,13 @@ use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_board::SudokuDigit as SudokuDigit;
 use crate::nineset::NineSet as NineSet;
 use crate::DigitCoors as DigitCoors;
+use crate::progress_state::ProgressState as ProgressState;
 
 use std::vec::*;
 //use std::collections::HashMap;
 use itertools::*;
 use smallvec::*;
 
-use crate::guess_branch::ProgressState::MakingProgress;
 use crate::possibilities::Possibilities;
 //use crate::sudoku_digit::SDArr as SDArr;
 
@@ -43,8 +43,10 @@ impl GuessBranch {
         new_branch
     }
 
-    pub fn solve_puzzle(mut board: &mut SudokuBoard) -> ProgressState {
-        let mut trunk = GuessBranch{board: (board.clone()), ninesets: NineSet::ninesets_from_board(&mut board)};
+    pub fn solve_puzzle(board: &SudokuBoard) -> ProgressState {
+        let mut trunk_board = board.clone();
+        let trunk_ninesets = NineSet::ninesets_from_board(&mut trunk_board);
+        let mut trunk = GuessBranch{board: trunk_board, ninesets: trunk_ninesets};
         trunk.run_branch()
     }
 
@@ -63,7 +65,7 @@ impl GuessBranch {
                 },
                 ProgressState::Deduced(preexisting_vec) => {
                     for deduced in preexisting_vec {self.set_deduced(deduced.0, deduced.1)};
-                    branch_result = MakingProgress
+                    branch_result = ProgressState::MakingProgress
                 },
                 ProgressState::MakingProgress => {
                     branch_result = self.run_ninesets()
@@ -157,57 +159,9 @@ impl GuessBranch {
 
 
 
-#[derive(Clone)]
-pub struct DedArr([(u8, DigitCoors); 81]);
 
-unsafe impl smallvec::Array for DedArr {
-    type Item = (u8, DigitCoors);
-    fn size() -> usize { 81 }
-    fn ptr(&self) -> *const (u8, DigitCoors) { self.0.as_ptr() }
-    fn ptr_mut(&mut self) -> *mut (u8, DigitCoors) { self.0.as_mut_ptr() }
-}
 
-impl PartialEq for DedArr {
-    fn eq(&self, other: &DedArr) -> bool {
-        let mut eq_bool = true;
-        for ind in 0..=80 {
-            if self.0[ind] != other.0[ind] {
-                eq_bool = false;
-            }
-        }
-        eq_bool
-    }
-}
 
-impl Eq for DedArr {}
-
-#[derive(Clone, Debug)]
-pub enum ProgressState {
-    Deduced(SmallVec<(DedArr)>),
-    MakingProgress,
-    Stalled,
-    Solved,
-    NoSolution
-}
-
-impl ProgressState {
-    fn sort_results(results: Vec<ProgressState>) -> [Vec<ProgressState>; 5] {
-        let my_vec: Vec<ProgressState> = vec![];
-        let (d, ip, gn, s, ns) = (my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone());
-        let mut vec_arr = [d, ip, gn, s, ns];
-        for result in results {
-            let vec_ind = match result {
-                ProgressState::Deduced(_) => 0,
-                ProgressState::MakingProgress => 1,
-                ProgressState::Stalled => 2,
-                ProgressState::Solved => 3,
-                ProgressState::NoSolution => 4
-            };
-            vec_arr[vec_ind].push(result);
-        };
-        vec_arr
-    }
-}
 
 
 

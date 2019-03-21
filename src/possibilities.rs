@@ -1,5 +1,5 @@
 use smallvec::SmallVec as SmallVec;
-use crate::guess_branch::ProgressState;
+use crate::progress_state::ProgressState as ProgressState;
 
 #[derive(Clone, Copy, PartialEq, Debug)]
 pub struct Possibilities {

@@ -5,7 +5,7 @@ use crate::sudoku_board::SudokuBoard as SudokuBoard;
 use crate::sudoku_digit::SudokuDigit as SudokuDigit;
 use crate::NineSetCoors as NineSetCoors;
 use crate::DigitCoors as DigitCoors;
-use crate::sudoku_digit::SDArr as SDArr;
+use crate::SDArr as SDArr;
 //use crate::possibilities::PossProgress as PossProgress;
 //use crate::guess_branch::BranchResult as BranchResult;
 //use std::vec::*;
@@ -16,7 +16,7 @@ use crate::sd_macros::twenty_seven;
 use crate::possibilities::Possibilities;
 //use crate::possibilities::PossProgress;
 use smallvec::SmallVec;
-use crate::guess_branch::ProgressState;
+use crate::progress_state::ProgressState as ProgressState;
 //use crate::guess_branch::ProgressState::Deduced;
 //use crate::guess_branch::DedArr;
 

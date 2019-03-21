@@ -3,7 +3,7 @@ use smallvec::*;
 use itertools::Itertools;
 use crate::smallvec_arrays::ProgArr;
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ProgressState {
     Deduced(SmallVec<(DedArr)>),
     MakingProgress,

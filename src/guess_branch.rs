@@ -50,17 +50,19 @@ impl GuessBranch {
         let mut branch_result = ProgressState::MakingProgress;
 
         loop {
+            let br: ProgressState;
             match branch_result {
                 ProgressState::Solved | ProgressState::NoSolution => {break},
-                ProgressState::Stalled => {branch_result = self.make_guesses();},
+                ProgressState::Stalled => {br = self.make_guesses();},
                 ProgressState::Deduced(preexisting_vec) => {
                     for deduced in preexisting_vec {self.set_deduced(deduced.0, deduced.1)};
-                    branch_result = ProgressState::MakingProgress;
+                    br = ProgressState::MakingProgress;
                 },
                 ProgressState::MakingProgress => {
-                    branch_result = self.run_ninesets();
+                    br = self.run_ninesets();
                 }
             }
+            branch_result = br;
         }
         branch_result
     }

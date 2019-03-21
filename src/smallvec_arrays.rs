@@ -1,6 +1,7 @@
 use crate::SudokuDigit;
 use crate::DigitCoors;
 use crate::nineset::NineSet;
+use crate::ProgressState;
 
 pub struct SDArr([SudokuDigit; 81]);
 
@@ -52,4 +53,13 @@ unsafe impl smallvec::Array for NSArr {
     fn size() -> usize { 27 }
     fn ptr(&self) -> *const NineSet { self.0.as_ptr() }
     fn ptr_mut(&mut self) -> *mut NineSet { self.0.as_mut_ptr() }
+}
+
+pub struct ProgArr([ProgressState; 27]);
+
+unsafe impl smallvec::Array for ProgArr {
+    type Item = ProgressState;
+    fn size() -> usize { 27 }
+    fn ptr(&self) -> *const ProgressState { self.0.as_ptr() }
+    fn ptr_mut(&mut self) -> *mut ProgressState { self.0.as_mut_ptr() }
 }

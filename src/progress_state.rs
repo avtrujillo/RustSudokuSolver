@@ -1,6 +1,7 @@
 use crate::DedArr;
 use smallvec::*;
 use itertools::Itertools;
+use crate::smallvec_arrays::ProgArr;
 
 #[derive(Clone, Debug)]
 pub enum ProgressState {

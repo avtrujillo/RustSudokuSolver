@@ -10,6 +10,7 @@ use itertools::*;
 use smallvec::*;
 
 use crate::possibilities::Possibilities;
+use crate::smallvec_arrays::ProgArr;
 //use crate::sudoku_digit::SDArr as SDArr;
 
 pub type NineSetCoors = [DigitCoors; 9];
@@ -50,29 +51,28 @@ impl GuessBranch {
 
         loop {
             match branch_result {
-                ProgressState::Solved | ProgressState::NoSolution => {break branch_result},
-                ProgressState::Stalled => {
-                    branch_result = self.make_guesses()
-                },
+                ProgressState::Solved | ProgressState::NoSolution => {break},
+                ProgressState::Stalled => {branch_result = self.make_guesses();},
                 ProgressState::Deduced(preexisting_vec) => {
                     for deduced in preexisting_vec {self.set_deduced(deduced.0, deduced.1)};
-                    branch_result = ProgressState::MakingProgress
+                    branch_result = ProgressState::MakingProgress;
                 },
                 ProgressState::MakingProgress => {
-                    branch_result = self.run_ninesets()
+                    branch_result = self.run_ninesets();
                 }
             }
         }
+        branch_result
     }
 
     fn run_ninesets(&mut self) -> ProgressState {
         let mut board_clone = self.board.clone();
-        let nineset_results: Vec<ProgressState> = self.ninesets.iter_mut().map( |ns| {
+        let nineset_results: SmallVec<ProgArr> = self.ninesets.iter_mut().map( |ns| {
             ns.update_poss(&mut board_clone)
         }).collect();
-        Self::process_ninesets_results(nineset_results)
+        ProgressState::fold_prog(nineset_results)
     }
-
+/*
     fn process_ninesets_results(ns_brs: Vec<ProgressState>) -> ProgressState {
         //let new_board = SudokuBoard::new([SudokuDigit::Unknown(Possibilities::new()); 81]);
         let mut overall_result = ProgressState::Solved;
@@ -110,7 +110,7 @@ impl GuessBranch {
         };
         overall_result
     }
-
+*/
     fn set_deduced(&mut self, digit_value: u8, digit_coors: DigitCoors) {
         self.board.set_known(digit_coors.to_index(), digit_value);
     }

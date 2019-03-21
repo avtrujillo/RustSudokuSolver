@@ -2,6 +2,7 @@ use crate::SudokuDigit;
 use crate::DigitCoors;
 use crate::nineset::NineSet;
 use crate::ProgressState;
+use crate::guess_branch::GuessBranch;
 
 pub struct SDArr([SudokuDigit; 81]);
 
@@ -62,4 +63,13 @@ unsafe impl smallvec::Array for ProgArr {
     fn size() -> usize { 27 }
     fn ptr(&self) -> *const ProgressState { self.0.as_ptr() }
     fn ptr_mut(&mut self) -> *mut ProgressState { self.0.as_mut_ptr() }
+}
+
+pub struct GBArr([GuessBranch; 81]);
+
+unsafe impl smallvec::Array for GBArr {
+    type Item = GuessBranch;
+    fn size() -> usize {27}
+    fn ptr(&self) -> *const GuessBranch { self.0.as_ptr() }
+    fn ptr_mut(&mut self) -> *mut GuessBranch { self.0.as_mut_ptr() }
 }

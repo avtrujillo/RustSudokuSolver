@@ -30,9 +30,7 @@ impl Possibilities {
     }
 
     pub fn eliminate(&mut self, elim: u8) -> ProgressState {
-        match self.set_digit_bool(elim, false) {
-
-        }
+        self.set_digit_bool(elim, false)
     }
 
     pub fn copy_eliminate(&mut self, elim: u8) -> Self {
@@ -45,7 +43,8 @@ impl Possibilities {
         match self.poss_count() {
             0 => PossProgress::NoSolution,
             1 => PossProgress::Solved(self.get_solution()),
-            (2..=9) => PossProgress::InProgress(self.digits)
+            (2..=9) => PossProgress::InProgress(self.digits),
+            _ => panic!("Shouldn't be possiblle")
         }
     }
 
@@ -61,7 +60,7 @@ impl Possibilities {
         // Warning: only call this after making sure that there's only one remaining possibility
         // otherwise you'll just get the first possibility
         let solution_ind = self.digits.iter().enumerate().find(
-            |(ind, bool_val)| **bool_val
+            |(_ind, bool_val)| **bool_val
         ).expect("Couldn't find a solution").0 as u8;
         (solution_ind + 1)
     }

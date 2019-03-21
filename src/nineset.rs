@@ -67,8 +67,8 @@ impl NineSet {
     pub fn update_poss(&mut self, board: &mut SudokuBoard) -> ProgressState {
         let self_prog: ProgressState = self.update_member_poss(board);
         let other_prog: ProgressState = self.update_self_poss(board);
-        [self_prog, other_prog].iter().fold(ProgressState::Solved, |acc, prog| {
-            Self::fold_prog(acc, *prog)
+        [self_prog, other_prog].into_iter().fold(ProgressState::Solved, |acc, prog| {
+            Self::fold_prog(acc, prog.clone())
         })
     }
 
@@ -76,7 +76,7 @@ impl NineSet {
         match self.progress_cache {
             ProgressState::NoSolution | ProgressState::Solved => self.progress_cache.clone(),
             _ => {
-                self.tile_coors.iter().filter_map(|coors| {
+                self.tile_coors.clone().into_iter().filter_map(|coors| {
                     match board.tiles()[coors.to_index()] {
                         SudokuDigit::Known(digit) => Some(digit),
                         SudokuDigit::Unknown(_) => None
@@ -88,7 +88,7 @@ impl NineSet {
         }
     }
 
-    fn fold_prog(mut acc: ProgressState, prog: ProgressState) -> ProgressState {
+    fn fold_prog(acc: ProgressState, prog: ProgressState) -> ProgressState {
         match (acc, prog) {
             (ProgressState::NoSolution, _) | // NoSolution has highest priority
             (_, ProgressState::NoSolution) => ProgressState::NoSolution,
@@ -109,9 +109,9 @@ impl NineSet {
         let mut sds: SmallVec<SDArr> = self.tile_coors.iter().map( |tc| {
             board.tiles()[tc.to_index()]
         }).collect();
-        sds.iter_mut().map ( |sd| {
-            self.possibilities.eliminated().iter().map( |n| {
-                (*sd).eliminate_possibility(*n);
+        sds.iter_mut().map ( move |sd| {
+            self.possibilities.eliminated().into_iter().map( move |n| {
+                (*sd).eliminate_possibility(n)
             })
         }).flatten().fold(ProgressState::Solved, |acc, prog| {
             Self::fold_prog(acc, prog)
@@ -119,7 +119,7 @@ impl NineSet {
     }
 
     fn deduced_coors(&self, &board: &SudokuBoard) -> DigitCoors {
-        let mut dc_iter = board.tiles().iter().enumerate().filter_map( |(ind, tile)| {
+        board.tiles().iter().enumerate().filter_map( |(ind, tile)| {
             let is_unknown: bool = match *tile {
                 SudokuDigit::Unknown(_) => true,
                 _ => false
@@ -131,8 +131,7 @@ impl NineSet {
             } else {
                 None
             }
-        });
-        dc_iter.next().expect("There should be exactly one item")
+        }).next().expect("There should be exactly one item")
     }
 }
 

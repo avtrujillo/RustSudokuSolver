@@ -43,7 +43,7 @@ impl GuessBranch {
         new_branch
     }
 
-    pub fn solve_puzzle(board: &mut SudokuBoard) -> ProgressState {
+    pub fn solve_puzzle(mut board: &mut SudokuBoard) -> ProgressState {
         let mut trunk = GuessBranch{board: (board.clone()), ninesets: NineSet::ninesets_from_board(&mut board)};
         trunk.run_branch()
     }
@@ -81,7 +81,7 @@ impl GuessBranch {
     }
 
     fn process_ninesets_results(ns_brs: Vec<ProgressState>) -> ProgressState {
-        let new_board = SudokuBoard::new([SudokuDigit::Unknown(Possibilities::new()); 81]);
+        //let new_board = SudokuBoard::new([SudokuDigit::Unknown(Possibilities::new()); 81]);
         let mut overall_result = ProgressState::Solved;
         for br in ns_brs {
             match br {
@@ -108,7 +108,7 @@ impl GuessBranch {
                         ProgressState::NoSolution | ProgressState::Deduced(_) | ProgressState::MakingProgress =>
                             {panic!("Should be impossible")},
                         ProgressState::Solved => {overall_result = ProgressState::Stalled;},
-                        ProgressState::Stalled | ProgressState::NoSolution => (),
+                        ProgressState::Stalled => (),
                     }
                 },
                 ProgressState::Solved => {overall_result = ProgressState::Solved;}
@@ -125,7 +125,7 @@ impl GuessBranch {
     fn make_guesses(&self) -> ProgressState {
         let mut branches = self.create_guess_branches();
         let results: Vec<(ProgressState)> = branches.iter_mut().map(|branch| branch.run_ninesets()).collect();
-        let [d, ip, gn, s, ns] = ProgressState::sort_results(results);
+        let [d, _ip, _gn, _s, _ns] = ProgressState::sort_results(results);
         if d.len() == 1 {
             d[0].clone()
         }
@@ -194,16 +194,18 @@ impl ProgressState {
     fn sort_results(results: Vec<ProgressState>) -> [Vec<ProgressState>; 5] {
         let my_vec: Vec<ProgressState> = vec![];
         let (d, ip, gn, s, ns) = (my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone(), my_vec.clone());
-        for result in results.iter() {
-            match result {
-                ProgressState::Deduced(_) => d,
-                ProgressState::MakingProgress => ip,
-                ProgressState::Stalled => gn,
-                ProgressState::Solved => s,
-                ProgressState::NoSolution => ns
-            }.push(*result);
+        let mut vec_arr = [d, ip, gn, s, ns];
+        for result in results {
+            let vec_ind = match result {
+                ProgressState::Deduced(_) => 0,
+                ProgressState::MakingProgress => 1,
+                ProgressState::Stalled => 2,
+                ProgressState::Solved => 3,
+                ProgressState::NoSolution => 4
+            };
+            vec_arr[vec_ind].push(result);
         };
-        [d, ip, gn, s, ns]
+        vec_arr
     }
 }
 
